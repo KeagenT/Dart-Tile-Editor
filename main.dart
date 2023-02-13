@@ -2,9 +2,11 @@ import 'dart:html';
 import 'dart:html';
 import 'dart:async';
 
+CanvasElement? canvas;
+CanvasRenderingContext2D? ctx;
+
+int TILE_SIZE = 32;
 void main() {
-  List<List<int>> testArray = [
-    [1, 2, 3],
-    [4, 5, 6]
-  ];
+  canvas = querySelector('#canvas') as CanvasElement;
+  ctx = canvas!.getContext('2d') as CanvasRenderingContext2D;
 }

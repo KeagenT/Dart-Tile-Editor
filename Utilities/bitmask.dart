@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:html';
 import '../Models/grid.dart';
 import '../Models/tile.dart';
 import '../Types/position.dart';
@@ -13,18 +14,18 @@ int calcBitmask(TileGrid grid, Position coordinates) {
   int bitmask = 0;
   Tile tile = grid.get(coordinates) as Tile;
   if (tile is GrassTile) {
-    bitmask = calcGrassBitmask(grid, tile);
+    bitmask = calcGrassBitmask(grid, tile, coordinates);
   }
   if (tile is HoleTile) {
-    bitmask = calcHoleBitmask(grid, tile);
+    bitmask = calcHoleBitmask(grid, tile, coordinates);
   }
   return bitmask;
 }
 
-int calcGrassBitmask(TileGrid grid, Tile tile) {
+int calcGrassBitmask(TileGrid grid, Tile tile, Position coordinates) {
   int bitmask = 0;
   int bit = 0;
-  tile.position.surrounding.forEach((Position direction) {
+  coordinates.surrounding.forEach((Position direction) {
     if (grid.contains(direction)) {
       Tile directionalTile = grid.get(direction) as Tile;
       if (!directionalTile.collision) {
@@ -36,10 +37,10 @@ int calcGrassBitmask(TileGrid grid, Tile tile) {
   return bitmask;
 }
 
-int calcHoleBitmask(TileGrid grid, Tile tile) {
+int calcHoleBitmask(TileGrid grid, Tile tile, Position coordinates) {
   int bitmask = HOLE_TILE_STARTING_BITMASK;
-  if (grid.contains(tile.position.north)) {
-    Tile northTile = grid.get(tile.position.north) as Tile;
+  if (grid.contains(coordinates.north)) {
+    Tile northTile = grid.get(coordinates.north) as Tile;
     if (!northTile.collision) {
       bitmask |= 1 << NORTH_BIT;
     }
