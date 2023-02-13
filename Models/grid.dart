@@ -37,7 +37,7 @@ class Grid<T> {
 
 class TileGrid extends Grid<Tile> {
   TileGrid(int height, int width) : super(height, width) {
-    _grid = List.generate(height,
-        (y) => List.generate(width, (x) => Tile(position: Position(x, y))));
+    _grid =
+        List.generate(height, (y) => List.generate(width, (x) => HoleTile()));
   }
 }
