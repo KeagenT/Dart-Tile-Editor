@@ -1,5 +1,3 @@
-import 'dart:collection';
-import 'dart:html';
 import '../Models/grid.dart';
 import '../Models/tile.dart';
 import '../Types/position.dart';
@@ -20,6 +18,17 @@ int calcBitmask(TileGrid grid, Position coordinates) {
     bitmask = calcHoleBitmask(grid, tile, coordinates);
   }
   return bitmask;
+}
+
+void updateBitmasks(TileGrid grid, Position coordinates) {
+  Tile centerTile = grid.get(coordinates) as Tile;
+  centerTile.bitmask = calcBitmask(grid, coordinates);
+  coordinates.surrounding.forEach((Position direction) {
+    if (grid.contains(direction)) {
+      Tile directionalTile = grid.get(direction) as Tile;
+      directionalTile.bitmask = calcBitmask(grid, direction);
+    }
+  });
 }
 
 int calcGrassBitmask(TileGrid grid, Tile tile, Position coordinates) {
