@@ -11,8 +11,8 @@ const int NORTH_BIT = 0;
 int calcBitmask(TileGrid grid, Position coordinates) {
   int bitmask = 0;
   Tile tile = grid.get(coordinates) as Tile;
-  if (tile is GrassTile) {
-    bitmask = calcGrassBitmask(grid, tile, coordinates);
+  if (tile is GroundTile) {
+    bitmask = calcGroundBitmask(grid, tile, coordinates);
   }
   if (tile is HoleTile) {
     bitmask = calcHoleBitmask(grid, tile, coordinates);
@@ -20,18 +20,7 @@ int calcBitmask(TileGrid grid, Position coordinates) {
   return bitmask;
 }
 
-void updateBitmasks(TileGrid grid, Position coordinates) {
-  Tile centerTile = grid.get(coordinates) as Tile;
-  centerTile.bitmask = calcBitmask(grid, coordinates);
-  coordinates.surrounding.forEach((Position direction) {
-    if (grid.contains(direction)) {
-      Tile directionalTile = grid.get(direction) as Tile;
-      directionalTile.bitmask = calcBitmask(grid, direction);
-    }
-  });
-}
-
-int calcGrassBitmask(TileGrid grid, Tile tile, Position coordinates) {
+int calcGroundBitmask(TileGrid grid, Tile tile, Position coordinates) {
   int bitmask = 0;
   int bit = 0;
   coordinates.surrounding.forEach((Position direction) {

@@ -12,8 +12,8 @@ class Tile {
   }
 }
 
-class GrassTile extends Tile {
-  GrassTile({int size = 0, bool collision = false, int bitmask = 0})
+class GroundTile extends Tile {
+  GroundTile({int size = 0, bool collision = false, int bitmask = 0})
       : super(size: size, collision: collision, bitmask: bitmask);
 }
 

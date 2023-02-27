@@ -1,13 +1,28 @@
+import '../Commands/command.dart';
+import '../Commands/draw.dart';
 import '../Types/position.dart';
+import 'grid.dart';
 import 'tile.dart';
 
-abstract class brush {
+abstract class Brush<T> {
   draw(Position position);
-  updateCurrentPaint();
+  updateCurrentPaint(T paint);
 }
 
-class TileBrush extends brush {
+class TileBrush extends Brush<Tile> {
   Tile currentTile = Tile();
-  void draw(Position position) {}
-  void updateCurrentPaint() {}
+  TileGrid grid = TileGrid(10, 10);
+  CommandManager drawCommands = CommandManager();
+
+  void draw(Position position) {
+    drawCommands.execute(DrawCommand(this.grid, this.currentTile, position));
+  }
+
+  void undo() {
+    drawCommands.undo();
+  }
+
+  void updateCurrentPaint(Tile tile) {
+    this.currentTile = tile;
+  }
 }
