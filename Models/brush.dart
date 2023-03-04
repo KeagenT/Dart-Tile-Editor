@@ -11,8 +11,10 @@ abstract class Brush<T> {
 
 class TileBrush extends Brush<Tile> {
   Tile currentTile = Tile();
-  TileGrid grid = TileGrid(10, 10);
+  TileGrid grid = TileGrid(10, 10, fillValue: HoleTile());
   CommandManager drawCommands = CommandManager();
+
+  TileBrush(this.grid);
 
   void draw(Position position) {
     drawCommands.execute(DrawCommand(this.grid, this.currentTile, position));

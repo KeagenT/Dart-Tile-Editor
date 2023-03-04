@@ -11,10 +11,10 @@ const int NORTH_BIT = 0;
 int calcBitmask(TileGrid grid, Position coordinates) {
   int bitmask = 0;
   Tile tile = grid.get(coordinates) as Tile;
-  if (tile is GroundTile) {
+  if (tile.tileType == types['Ground']) {
     bitmask = calcGroundBitmask(grid, tile, coordinates);
   }
-  if (tile is HoleTile) {
+  if (tile.tileType == types['Hole']) {
     bitmask = calcHoleBitmask(grid, tile, coordinates);
   }
   return bitmask;
@@ -44,4 +44,10 @@ int calcHoleBitmask(TileGrid grid, Tile tile, Position coordinates) {
     }
   }
   return bitmask;
+}
+
+Position convertBitmaskToFilePosition(int bitmask, int sourceWidth) {
+  int sourceY = bitmask ~/ sourceWidth;
+  int sourceX = bitmask % sourceWidth;
+  return Position(sourceX, sourceY);
 }

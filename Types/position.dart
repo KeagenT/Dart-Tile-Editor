@@ -1,8 +1,8 @@
 class Position {
-  final int x = 0;
-  final int y = 0;
+  final int x;
+  final int y;
 
-  const Position(int x, int y);
+  const Position(int this.x, int this.y);
 
   Position operator +(Position other) {
     return Position(this.x + other.x, this.y + other.y);

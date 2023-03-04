@@ -4,22 +4,19 @@ import '../Types/position.dart';
 import 'command.dart';
 
 class SetTileCommand extends Command {
-  TileGrid grid = TileGrid(10, 10);
-  Tile tile = Tile();
-  Position coordinates = Position(0, 0);
+  final TileGrid grid;
+  final Tile tile;
+  final Position coordinates;
 
-  Tile previousTile = Tile();
+  late Tile previousTile;
 
-  SetTileCommand(TileGrid grid, Tile tile, Position coordinates) {
-    this.grid = grid;
-    this.tile = tile;
-    this.coordinates = coordinates;
-  }
+  SetTileCommand(this.grid, this.tile, this.coordinates);
 
   @override
   void execute() {
-    this.previousTile = grid.get(this.coordinates)!;
-    grid.set(this.coordinates, this.tile);
+    this.previousTile = this.grid.get(this.coordinates)!;
+    this.grid.set(this.coordinates, this.tile);
+    print('Calling setTileCommand.execute()');
   }
 
   @override

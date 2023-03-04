@@ -7,8 +7,8 @@ import 'command.dart';
 // This command is used to update the bitmask of a tile at a position
 // on the grid, based on the surrounding tiles
 class UpdateTileBitmaskCommand extends Command {
-  TileGrid grid = TileGrid(10, 10);
-  Position coordinates = Position(0, 0);
+  final TileGrid grid;
+  final Position coordinates;
   int previousBitmask = 0;
 
   UpdateTileBitmaskCommand(this.grid, this.coordinates);
@@ -30,8 +30,8 @@ class UpdateTileBitmaskCommand extends Command {
 // This command is used to update the bitmasks of all surrounding tiles
 // and a center tile, when one tile is placed on the grid.
 class UpdateTileBitmasksCommand extends Command {
-  TileGrid grid = TileGrid(10, 10);
-  Position coordinates = Position(0, 0);
+  final TileGrid grid;
+  final Position coordinates;
   List<UpdateTileBitmaskCommand> updateTileBitmaskCommands = [];
 
   UpdateTileBitmasksCommand(this.grid, this.coordinates);

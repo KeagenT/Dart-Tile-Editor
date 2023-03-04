@@ -1,17 +1,16 @@
 import 'dart:math';
 import '../Models/tile.dart';
 import '../Types/position.dart';
+import '../Utilities/bitmask.dart';
 
 class Grid<T> {
-  List<List<T>> _grid = [];
-  int height = 0;
-  int width = 0;
+  late List<List<T>> _grid;
+  final int height;
+  final int width;
 
-  Grid(int height, int width) {
-    height = height;
-    width = width;
+  Grid(this.height, this.width, {required T fillValue}) {
     _grid =
-        List.generate(height, (i) => List.generate(width, (i) => null as T));
+        List.generate(height, (i) => List.generate(width, (i) => fillValue));
   }
 
   T? get(Position p) => _grid[p.y][p.x];
@@ -36,8 +35,19 @@ class Grid<T> {
 }
 
 class TileGrid extends Grid<Tile> {
-  TileGrid(int height, int width) : super(height, width) {
-    _grid =
-        List.generate(height, (y) => List.generate(width, (x) => HoleTile()));
+  TileGrid(height, width, {required Tile fillValue})
+      : super(height, width, fillValue: HoleTile()) {}
+
+  Position getTileBitmaskToDraw(Position coordinates, int tileSheetTileWidth) {
+    int tileBitmask = this.get(coordinates)!.bitmask;
+    return convertBitmaskToFilePosition(tileBitmask, tileSheetTileWidth);
+  }
+
+  String toString() {
+    String output = '';
+    for (int row = this.height - 1; row > 0; row--) {
+      output += _grid[row].toString() + '\n';
+    }
+    return output;
   }
 }

@@ -1,23 +1,34 @@
 import '../Types/position.dart';
 
+const types = {
+  'Ground': 'Ground Tile',
+  'Hole': 'Hole Tile',
+  'Tile': 'Tile',
+};
+
 class Tile {
-  int size = 0;
   bool collision = false;
   int bitmask = 0;
+  final tileType = types['Tile'];
 
-  Tile({size = 0, collision = false, bitmask = 0}) {
-    this.size = size;
+  Tile({collision = false, bitmask = 0}) {
     this.collision = collision;
     this.bitmask = bitmask;
+  }
+  //override toString
+  String toString() {
+    return '($tileType, $bitmask)';
   }
 }
 
 class GroundTile extends Tile {
-  GroundTile({int size = 0, bool collision = false, int bitmask = 0})
-      : super(size: size, collision: collision, bitmask: bitmask);
+  final tileType = types['Ground'];
+  GroundTile({bool collision = false, int bitmask = 0})
+      : super(collision: collision, bitmask: bitmask);
 }
 
 class HoleTile extends Tile {
-  HoleTile({int size = 0, bool collision = true, int bitmask = 16})
-      : super(size: size, collision: collision, bitmask: bitmask);
+  final tileType = types['Hole'];
+  HoleTile({bool collision = true, int bitmask = 16})
+      : super(collision: collision, bitmask: bitmask);
 }
