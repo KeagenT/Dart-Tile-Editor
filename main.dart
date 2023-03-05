@@ -36,6 +36,7 @@ void main() {
   new DrawCommand(tileGrid, GroundTile(), Position(1, 1)).execute();
   print('after corner drawing');
   print(tileGrid);
+  print(tileGrid.get(Position(1, 1)));
 }
 
 // void clear({color = 'black'}) {
