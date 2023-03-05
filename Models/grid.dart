@@ -8,9 +8,9 @@ class Grid<T> {
   final int height;
   final int width;
 
-  Grid(this.height, this.width, {required T fillValue}) {
+  Grid(this.height, this.width, {required T Function() fillValue}) {
     _grid =
-        List.generate(height, (i) => List.generate(width, (i) => fillValue));
+        List.generate(height, (i) => List.generate(width, (i) => fillValue()));
   }
 
   T? get(Position p) => _grid[p.y][p.x];
@@ -36,7 +36,7 @@ class Grid<T> {
 
 class TileGrid extends Grid<Tile> {
   TileGrid(height, width, {required Tile fillValue})
-      : super(height, width, fillValue: HoleTile()) {}
+      : super(height, width, fillValue: () => new HoleTile()) {}
 
   Position getTileBitmaskToDraw(Position coordinates, int tileSheetTileWidth) {
     int tileBitmask = this.get(coordinates)!.bitmask;
@@ -45,7 +45,7 @@ class TileGrid extends Grid<Tile> {
 
   String toString() {
     String output = '';
-    for (int row = this.height - 1; row > 0; row--) {
+    for (int row = 0; row < this.height; row++) {
       output += _grid[row].toString() + '\n';
     }
     return output;

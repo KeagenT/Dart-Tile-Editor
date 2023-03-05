@@ -9,7 +9,7 @@ import 'setTile.dart';
 // and then update the bitmasks of the surrounding tiles with the UpdateTileBitmasksCommand
 class DrawCommand extends Command {
   final TileGrid grid;
-  final Tile tile;
+  Tile tile;
   final Position coordinates;
   late SetTileCommand setTileCommand;
   late UpdateTileBitmasksCommand updateTileBitmasksCommand;

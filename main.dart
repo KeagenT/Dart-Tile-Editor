@@ -26,13 +26,15 @@ void main() {
   //canvas = querySelector('#canvas') as CanvasElement;
   //ctx = canvas!.getContext('2d') as CanvasRenderingContext2D;
   //tilemapImage.src = tilemapSrc;
-  DrawCommand draw = new DrawCommand(tileGrid, GroundTile(), Position(0, 0));
   // new DrawCommand(tileGrid, GroundTile(), Position(1, 0)).execute();
   // new DrawCommand(tileGrid, GroundTile(), Position(0, 1)).execute();
   print('initial tile grid');
   print(tileGrid);
-  draw.execute();
-  print('after draw');
+  new DrawCommand(tileGrid, GroundTile(), Position(0, 0)).execute();
+  new DrawCommand(tileGrid, GroundTile(), Position(0, 1)).execute();
+  new DrawCommand(tileGrid, GroundTile(), Position(1, 0)).execute();
+  new DrawCommand(tileGrid, GroundTile(), Position(1, 1)).execute();
+  print('after corner drawing');
   print(tileGrid);
 }
 

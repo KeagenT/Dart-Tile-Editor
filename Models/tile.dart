@@ -17,7 +17,7 @@ class Tile {
   }
   //override toString
   String toString() {
-    return '($tileType, $bitmask)';
+    return '($tileType: ${bitmask})';
   }
 }
 

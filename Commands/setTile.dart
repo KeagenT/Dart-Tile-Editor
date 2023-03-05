@@ -5,7 +5,7 @@ import 'command.dart';
 
 class SetTileCommand extends Command {
   final TileGrid grid;
-  final Tile tile;
+  Tile tile;
   final Position coordinates;
 
   late Tile previousTile;
@@ -16,7 +16,6 @@ class SetTileCommand extends Command {
   void execute() {
     this.previousTile = this.grid.get(this.coordinates)!;
     this.grid.set(this.coordinates, this.tile);
-    print('Calling setTileCommand.execute()');
   }
 
   @override

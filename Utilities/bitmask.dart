@@ -43,6 +43,10 @@ int calcHoleBitmask(TileGrid grid, Tile tile, Position coordinates) {
       bitmask |= 1 << NORTH_BIT;
     }
   }
+  if (bitmask != HOLE_TILE_STARTING_BITMASK) {
+    print(
+        'Setting Hole Tile: $tile ${coordinates} to bitmask: $bitmask because of north tile: ${grid.get(coordinates.north)}');
+  }
   return bitmask;
 }
 
