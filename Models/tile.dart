@@ -21,7 +21,7 @@ class Tile {
   }
 
   String toString() {
-    return '($tileType: ${bitmask})';
+    return '($tileType: ${bitmask.toRadixString(2).padLeft(4, '0')})';
   }
 }
 
