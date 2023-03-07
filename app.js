@@ -2793,9 +2793,6 @@
     ConcurrentModificationError$(modifiedObject) {
       return new A.ConcurrentModificationError(modifiedObject);
     },
-    print(object) {
-      A.printString(A.S(object));
-    },
     Error: function Error() {
     },
     AssertionError: function AssertionError(t0) {
@@ -2860,6 +2857,9 @@
     document() {
       return document;
     },
+    ButtonElement_ButtonElement() {
+      return document.createElement("button");
+    },
     _EventStreamSubscription$(_target, _eventType, onData, _useCapture, $T) {
       var t1 = A._wrapZone(new A._EventStreamSubscription_closure(onData), type$.Event),
         t2 = t1 != null;
@@ -2896,6 +2896,8 @@
     },
     AreaElement: function AreaElement() {
     },
+    ButtonElement: function ButtonElement() {
+    },
     CanvasElement: function CanvasElement() {
     },
     CanvasRenderingContext2D: function CanvasRenderingContext2D() {
@@ -2928,8 +2930,9 @@
     },
     _DomRect: function _DomRect() {
     },
-    EventStreamProvider: function EventStreamProvider(t0) {
-      this.$ti = t0;
+    EventStreamProvider: function EventStreamProvider(t0, t1) {
+      this._eventType = t0;
+      this.$ti = t1;
     },
     _EventStream: function _EventStream() {
     },
@@ -2982,7 +2985,24 @@
       this._box_0 = t0;
       this.grid = t1;
     },
+    Brush: function Brush() {
+    },
+    TileBrush: function TileBrush(t0, t1, t2) {
+      this.currentTile = t0;
+      this.grid = t1;
+      this.drawCommands = t2;
+    },
     Command: function Command() {
+    },
+    CommandManager: function CommandManager(t0) {
+      this.commands = t0;
+    },
+    DrawCommand: function DrawCommand(t0, t1, t2) {
+      var _ = this;
+      _.grid = t0;
+      _.tile = t1;
+      _.coordinates = t2;
+      _.__DrawCommand_updateTileBitmasksCommand_A = _.__DrawCommand_setTileCommand_A = $;
     },
     TileGrid$(height, width, fillValue) {
       var t1 = new A.TileGrid(height, width);
@@ -2999,21 +3019,30 @@
     TileGrid_closure: function TileGrid_closure() {
     },
     main() {
-      var t2, t3,
-        t1 = type$.CanvasElement._as(document.querySelector("#canvas"));
+      var t3, t4, t5,
+        t1 = document,
+        t2 = type$.ButtonElement;
+      $.groundButton = t2._as(t1.querySelector("#GroundTile"));
+      $.holeButton = t2._as(t1.querySelector("#HoleTile"));
+      t1 = type$.CanvasElement._as(t1.querySelector("#canvas"));
       $.canvas = t1;
       $.ctx = type$.CanvasRenderingContext2D._as(B.CanvasElement_methods.getContext$1(t1, "2d"));
       t1 = $.$get$tilemapImage();
       (t1 && B.ImageElement_methods).set$src(t1, "dungeon_tilemap.png");
       A.clear();
       A.drawGrid();
+      t1 = type$.Element;
+      t2 = t1._as($.$get$groundButton());
+      t3 = type$._ElementEventStreamImpl_MouseEvent;
+      t4 = t3._eval$1("~(1)?");
+      t5 = t4._as(new A.main_closure());
+      type$.nullable_void_Function._as(null);
+      t3 = t3._precomputed1;
+      A._EventStreamSubscription$(t2, "click", t5, false, t3);
+      A._EventStreamSubscription$(t1._as($.$get$holeButton()), "click", t4._as(new A.main_closure0()), false, t3);
       t1 = $.canvas;
-      if (t1 != null) {
-        t2 = type$._ElementEventStreamImpl_MouseEvent;
-        t3 = t2._eval$1("~(1)?")._as(new A.main_closure());
-        type$.nullable_void_Function._as(null);
-        A._EventStreamSubscription$(t1, "mousedown", t3, false, t2._precomputed1);
-      }
+      if (t1 != null)
+        A._EventStreamSubscription$(t1, "mousedown", t4._as(new A.main_closure1()), false, t3);
     },
     clear() {
       var t2, t3,
@@ -3047,14 +3076,29 @@
     },
     main_closure: function main_closure() {
     },
+    main_closure0: function main_closure0() {
+    },
+    main_closure1: function main_closure1() {
+    },
     Position: function Position(t0, t1) {
       this.x = t0;
       this.y = t1;
     },
-    HoleTile$() {
+    SetTileCommand: function SetTileCommand(t0, t1, t2) {
+      this.grid = t0;
+      this.tile = t1;
+      this.coordinates = t2;
+    },
+    GroundTile$(bitmask, collision) {
+      var t1 = new A.GroundTile("Ground Tile", "Tile");
+      t1.collision = collision;
+      t1.bitmask = bitmask;
+      return t1;
+    },
+    HoleTile$(bitmask, collision) {
       var t1 = new A.HoleTile("Hole Tile", "Tile");
-      t1.collision = true;
-      t1.bitmask = 16;
+      t1.collision = collision;
+      t1.bitmask = bitmask;
       return t1;
     },
     Tile: function Tile() {
@@ -3072,23 +3116,6 @@
       _.collision = false;
       _.bitmask = 0;
       _.tileType = t1;
-    },
-    printString(string) {
-      if (typeof dartPrint == "function") {
-        dartPrint(string);
-        return;
-      }
-      if (typeof console == "object" && typeof console.log != "undefined") {
-        console.log(string);
-        return;
-      }
-      if (typeof window == "object")
-        return;
-      if (typeof print == "function") {
-        print(string);
-        return;
-      }
-      throw "Unable to print message: " + String(string);
     },
     throwLateFieldNI(fieldName) {
       return A.throwExpression(A.LateError$fieldNI(fieldName));
@@ -3609,19 +3636,19 @@
     call$1(o) {
       return this.getTag(o);
     },
-    $signature: 4
+    $signature: 5
   };
   A.initHooks_closure0.prototype = {
     call$2(o, tag) {
       return this.getUnknownTag(o, tag);
     },
-    $signature: 5
+    $signature: 6
   };
   A.initHooks_closure1.prototype = {
     call$1(tag) {
       return this.prototypeForTag(A._asString(tag));
     },
-    $signature: 6
+    $signature: 7
   };
   A.Rti.prototype = {
     _eval$1(recipe) {
@@ -3645,7 +3672,7 @@
       t1.storedCallback = null;
       f.call$0();
     },
-    $signature: 7
+    $signature: 8
   };
   A._AsyncRun__initializeScheduleImmediate_closure.prototype = {
     call$1(callback) {
@@ -3655,19 +3682,19 @@
       t2 = this.span;
       t1.firstChild ? t1.removeChild(t2) : t1.appendChild(t2);
     },
-    $signature: 8
+    $signature: 9
   };
   A._AsyncRun__scheduleImmediateJsOverride_internalCallback.prototype = {
     call$0() {
       this.callback.call$0();
     },
-    $signature: 2
+    $signature: 3
   };
   A._AsyncRun__scheduleImmediateWithSetImmediate_internalCallback.prototype = {
     call$0() {
       this.callback.call$0();
     },
-    $signature: 2
+    $signature: 3
   };
   A._TimerImpl.prototype = {
     _TimerImpl$2(milliseconds, callback) {
@@ -3861,7 +3888,7 @@
     call$1(_) {
       return this.originalSource;
     },
-    $signature: 9
+    $signature: 10
   };
   A._Future__propagateToListeners_handleValueCallback.prototype = {
     call$0() {
@@ -4187,6 +4214,7 @@
       return String(receiver);
     }
   };
+  A.ButtonElement.prototype = {$isButtonElement: 1};
   A.CanvasElement.prototype = {
     getContext$1(receiver, contextId) {
       return receiver.getContext(contextId);
@@ -4306,7 +4334,7 @@
     call$1(e) {
       return this.onData.call$1(type$.Event._as(e));
     },
-    $signature: 10
+    $signature: 11
   };
   A._DOMWindowCrossFrame.prototype = {$isEventTarget: 1, $isWindowBase: 1};
   A.Point.prototype = {
@@ -4334,7 +4362,7 @@
       if (t2.contains$1(0, direction))
         B.JSArray_methods.add$1(t1.updateTileBitmaskCommands, new A.UpdateTileBitmaskCommand(t2, direction));
     },
-    $signature: 3
+    $signature: 4
   };
   A.UpdateTileBitmasksCommand_execute_closure0.prototype = {
     call$1(command) {
@@ -4374,7 +4402,7 @@
       tileToUpdate0.bitmask = bitmask;
       t1.$set$2(t2, tileToUpdate0);
     },
-    $signature: 11
+    $signature: 12
   };
   A.calcGroundBitmask_closure.prototype = {
     call$1(direction) {
@@ -4399,9 +4427,13 @@
       }
       ++this._box_0.bit;
     },
-    $signature: 3
+    $signature: 4
   };
+  A.Brush.prototype = {};
+  A.TileBrush.prototype = {};
   A.Command.prototype = {};
+  A.CommandManager.prototype = {};
+  A.DrawCommand.prototype = {};
   A.Grid.prototype = {
     Grid$3$fillValue(height, width, fillValue, $T) {
       var t1, _length0, t2, i, _list0, i0, _this = this,
@@ -4453,24 +4485,42 @@
   };
   A.TileGrid_closure.prototype = {
     call$0() {
-      return A.HoleTile$();
+      return A.HoleTile$(16, true);
     },
-    $signature: 12
+    $signature: 13
   };
   A.main_closure.prototype = {
     call$1($event) {
-      var t1, t2, xPosition, yPosition, clickedPosition;
       type$.MouseEvent._as($event);
-      A.print($event);
+      $.$get$brush().currentTile = A.GroundTile$(0, false);
+    },
+    $signature: 1
+  };
+  A.main_closure0.prototype = {
+    call$1($event) {
+      type$.MouseEvent._as($event);
+      $.$get$brush().currentTile = A.HoleTile$(16, true);
+    },
+    $signature: 1
+  };
+  A.main_closure1.prototype = {
+    call$1($event) {
+      var t1, t2, xPosition, yPosition, clickedPosition, t3, t4;
+      type$.MouseEvent._as($event);
       t1 = J.getInterceptor$x($event);
-      A.print(t1.get$offset($event));
       t2 = A._asInt(t1.get$offset($event).x);
       t1 = A._asInt(t1.get$offset($event).y);
       xPosition = B.JSInt_methods._tdivFast$1(t2, 16);
       yPosition = B.JSInt_methods._tdivFast$1(t1, 16);
       clickedPosition = new A.Position(xPosition, yPosition);
-      t1 = $.$get$tileGrid();
-      t2 = t1.__Grid__grid_A;
+      t1 = $.$get$brush();
+      t2 = t1.drawCommands;
+      t3 = t1.grid;
+      t1 = t1.currentTile.clone$0(0);
+      t4 = new A.DrawCommand(t3, t1, clickedPosition);
+      B.JSArray_methods.add$1(t2.commands, t4);
+      t4.__DrawCommand_setTileCommand_A = new A.SetTileCommand(t3, t1, clickedPosition);
+      t2 = t3.__Grid__grid_A;
       t2 === $ && A.throwLateFieldNI("_grid");
       if (!(yPosition >= 0 && yPosition < t2.length))
         return A.ioore(t2, yPosition);
@@ -4480,12 +4530,14 @@
       t2 = t2[xPosition];
       t2.toString;
       type$.Tile._as(t2);
-      t1.$set$2(clickedPosition, new A.GroundTile("Ground Tile", "Tile"));
-      new A.UpdateTileBitmasksCommand(t1, clickedPosition, A._setArrayType([], type$.JSArray_UpdateTileBitmaskCommand)).execute$0();
+      t3.$set$2(clickedPosition, t1);
+      t3 = new A.UpdateTileBitmasksCommand(t3, clickedPosition, A._setArrayType([], type$.JSArray_UpdateTileBitmaskCommand));
+      t4.__DrawCommand_updateTileBitmasksCommand_A = t3;
+      t3.execute$0();
       A.clear();
       A.drawGrid();
     },
-    $signature: 13
+    $signature: 1
   };
   A.Position.prototype = {
     $add(_, other) {
@@ -4502,6 +4554,7 @@
       return "Position(" + this.x + ", " + this.y + ")";
     }
   };
+  A.SetTileCommand.prototype = {};
   A.Tile.prototype = {
     toString$0(_) {
       return "(" + this.get$tileType() + ": " + B.JSString_methods.padLeft$2(B.JSInt_methods.toRadixString$1(this.bitmask, 2), 4, "0") + ")";
@@ -4511,11 +4564,19 @@
     }
   };
   A.GroundTile.prototype = {
+    clone$0(_) {
+      var t1 = this.collision;
+      return A.GroundTile$(this.bitmask, t1);
+    },
     get$tileType() {
       return this.GroundTile_tileType;
     }
   };
   A.HoleTile.prototype = {
+    clone$0(_) {
+      var t1 = this.collision;
+      return A.HoleTile$(this.bitmask, t1);
+    },
     get$tileType() {
       return this.HoleTile_tileType;
     }
@@ -4529,16 +4590,16 @@
   (function installTearOffs() {
     var _static_1 = hunkHelpers._static_1,
       _static_0 = hunkHelpers._static_0;
-    _static_1(A, "async__AsyncRun__scheduleImmediateJsOverride$closure", "_AsyncRun__scheduleImmediateJsOverride", 1);
-    _static_1(A, "async__AsyncRun__scheduleImmediateWithSetImmediate$closure", "_AsyncRun__scheduleImmediateWithSetImmediate", 1);
-    _static_1(A, "async__AsyncRun__scheduleImmediateWithTimer$closure", "_AsyncRun__scheduleImmediateWithTimer", 1);
+    _static_1(A, "async__AsyncRun__scheduleImmediateJsOverride$closure", "_AsyncRun__scheduleImmediateJsOverride", 2);
+    _static_1(A, "async__AsyncRun__scheduleImmediateWithSetImmediate$closure", "_AsyncRun__scheduleImmediateWithSetImmediate", 2);
+    _static_1(A, "async__AsyncRun__scheduleImmediateWithTimer$closure", "_AsyncRun__scheduleImmediateWithTimer", 2);
     _static_0(A, "async___startMicrotaskLoop$closure", "_startMicrotaskLoop", 0);
   })();
   (function inheritance() {
     var _inherit = hunkHelpers.inherit,
       _inheritMany = hunkHelpers.inheritMany;
     _inherit(A.Object, null);
-    _inheritMany(A.Object, [A.JS_CONST, J.Interceptor, J.ArrayIterator, A.Error, A.TypeErrorDecoder, A.NullThrownFromJavaScriptException, A._StackTrace, A.Closure, A.Rti, A._FunctionParameters, A._TimerImpl, A.AsyncError, A._FutureListener, A._Future, A._AsyncCallbackEntry, A.Stream, A.StreamSubscription, A._Zone, A.OutOfMemoryError, A.StackOverflowError, A._Exception, A.Null, A._StringStackTrace, A.StringBuffer, A.EventStreamProvider, A._DOMWindowCrossFrame, A.Point, A.Command, A.Grid, A.Position, A.Tile]);
+    _inheritMany(A.Object, [A.JS_CONST, J.Interceptor, J.ArrayIterator, A.Error, A.TypeErrorDecoder, A.NullThrownFromJavaScriptException, A._StackTrace, A.Closure, A.Rti, A._FunctionParameters, A._TimerImpl, A.AsyncError, A._FutureListener, A._Future, A._AsyncCallbackEntry, A.Stream, A.StreamSubscription, A._Zone, A.OutOfMemoryError, A.StackOverflowError, A._Exception, A.Null, A._StringStackTrace, A.StringBuffer, A.EventStreamProvider, A._DOMWindowCrossFrame, A.Point, A.Command, A.Brush, A.CommandManager, A.Grid, A.Position, A.Tile]);
     _inheritMany(J.Interceptor, [J.JSBool, J.JSNull, J.JavaScriptObject, J.JSArray, J.JSNumber, J.JSString]);
     _inheritMany(J.JavaScriptObject, [J.LegacyJavaScriptObject, A.EventTarget, A.CanvasRenderingContext2D, A.DomException, A.DomRectReadOnly, A.Event]);
     _inheritMany(J.LegacyJavaScriptObject, [J.PlainJavaScriptObject, J.UnknownJavaScriptObject, J.JavaScriptFunction]);
@@ -4546,7 +4607,7 @@
     _inheritMany(J.JSNumber, [J.JSInt, J.JSNumNotInt]);
     _inheritMany(A.Error, [A.LateError, A.TypeError, A.JsNoSuchMethodError, A.UnknownJsTypeError, A.RuntimeError, A._Error, A.AssertionError, A.NullThrownError, A.ArgumentError, A.UnsupportedError, A.UnimplementedError, A.ConcurrentModificationError, A.CyclicInitializationError]);
     _inherit(A.NullError, A.TypeError);
-    _inheritMany(A.Closure, [A.Closure0Args, A.Closure2Args, A.TearOffClosure, A.initHooks_closure, A.initHooks_closure1, A._AsyncRun__initializeScheduleImmediate_internalCallback, A._AsyncRun__initializeScheduleImmediate_closure, A._Future__propagateToListeners_handleWhenCompleteCallback_closure, A.Stream_length_closure, A._RootZone_bindUnaryCallbackGuarded_closure, A._EventStreamSubscription_closure, A.UpdateTileBitmasksCommand_execute_closure, A.UpdateTileBitmasksCommand_execute_closure0, A.calcGroundBitmask_closure, A.main_closure]);
+    _inheritMany(A.Closure, [A.Closure0Args, A.Closure2Args, A.TearOffClosure, A.initHooks_closure, A.initHooks_closure1, A._AsyncRun__initializeScheduleImmediate_internalCallback, A._AsyncRun__initializeScheduleImmediate_closure, A._Future__propagateToListeners_handleWhenCompleteCallback_closure, A.Stream_length_closure, A._RootZone_bindUnaryCallbackGuarded_closure, A._EventStreamSubscription_closure, A.UpdateTileBitmasksCommand_execute_closure, A.UpdateTileBitmasksCommand_execute_closure0, A.calcGroundBitmask_closure, A.main_closure, A.main_closure0, A.main_closure1]);
     _inheritMany(A.TearOffClosure, [A.StaticClosure, A.BoundClosure]);
     _inherit(A.initHooks_closure0, A.Closure2Args);
     _inherit(A._TypeError, A._Error);
@@ -4556,14 +4617,15 @@
     _inheritMany(A.EventTarget, [A.Node, A.Window]);
     _inheritMany(A.Node, [A.Element, A.CharacterData]);
     _inherit(A.HtmlElement, A.Element);
-    _inheritMany(A.HtmlElement, [A.AnchorElement, A.AreaElement, A.CanvasElement, A.FormElement, A.ImageElement, A.SelectElement]);
+    _inheritMany(A.HtmlElement, [A.AnchorElement, A.AreaElement, A.ButtonElement, A.CanvasElement, A.FormElement, A.ImageElement, A.SelectElement]);
     _inherit(A.UIEvent, A.Event);
     _inherit(A.MouseEvent, A.UIEvent);
     _inherit(A._DomRect, A.DomRectReadOnly);
     _inherit(A._EventStream, A.Stream);
     _inherit(A._ElementEventStreamImpl, A._EventStream);
     _inherit(A._EventStreamSubscription, A.StreamSubscription);
-    _inheritMany(A.Command, [A.UpdateTileBitmaskCommand, A.UpdateTileBitmasksCommand]);
+    _inheritMany(A.Command, [A.UpdateTileBitmaskCommand, A.UpdateTileBitmasksCommand, A.DrawCommand, A.SetTileCommand]);
+    _inherit(A.TileBrush, A.Brush);
     _inherit(A.TileGrid, A.Grid);
     _inheritMany(A.Tile, [A.GroundTile, A.HoleTile]);
   })();
@@ -4571,12 +4633,12 @@
     typeUniverse: {eC: new Map(), tR: {}, eT: {}, tPV: {}, sEA: []},
     mangledGlobalNames: {int: "int", double: "double", num: "num", String: "String", bool: "bool", Null: "Null", List: "List"},
     mangledNames: {},
-    types: ["~()", "~(~())", "Null()", "~(Position)", "@(@)", "@(@,String)", "@(String)", "Null(@)", "Null(~())", "_Future<@>(@)", "~(Event)", "~(UpdateTileBitmaskCommand)", "HoleTile()", "~(MouseEvent)"],
+    types: ["~()", "~(MouseEvent)", "~(~())", "Null()", "~(Position)", "@(@)", "@(@,String)", "@(String)", "Null(@)", "Null(~())", "_Future<@>(@)", "~(Event)", "~(UpdateTileBitmaskCommand)", "HoleTile()"],
     interceptorsByTag: null,
     leafTags: null,
     arrayRti: Symbol("$ti")
   };
-  A._Universe_addRules(init.typeUniverse, JSON.parse('{"PlainJavaScriptObject":"LegacyJavaScriptObject","UnknownJavaScriptObject":"LegacyJavaScriptObject","JavaScriptFunction":"LegacyJavaScriptObject","AbortPaymentEvent":"Event","ExtendableEvent":"Event","MathMLElement":"Element","AudioElement":"HtmlElement","MediaElement":"HtmlElement","HtmlDocument":"Node","Document":"Node","PointerEvent":"MouseEvent","CompositionEvent":"UIEvent","CDataSection":"CharacterData","Text":"CharacterData","JSBool":{"bool":[]},"JSArray":{"List":["1"],"Iterable":["1"]},"JSUnmodifiableArray":{"JSArray":["1"],"List":["1"],"Iterable":["1"]},"JSNumber":{"num":[]},"JSInt":{"int":[],"num":[]},"JSNumNotInt":{"num":[]},"JSString":{"String":[]},"LateError":{"Error":[]},"NullError":{"TypeError":[],"Error":[]},"JsNoSuchMethodError":{"Error":[]},"UnknownJsTypeError":{"Error":[]},"_StackTrace":{"StackTrace":[]},"Closure":{"Function":[]},"Closure0Args":{"Function":[]},"Closure2Args":{"Function":[]},"TearOffClosure":{"Function":[]},"StaticClosure":{"Function":[]},"BoundClosure":{"Function":[]},"RuntimeError":{"Error":[]},"_Error":{"Error":[]},"_TypeError":{"TypeError":[],"Error":[]},"_Future":{"Future":["1"]},"AsyncError":{"Error":[]},"_Zone":{"Zone":[]},"_RootZone":{"_Zone":[],"Zone":[]},"int":{"num":[]},"List":{"Iterable":["1"]},"AssertionError":{"Error":[]},"TypeError":{"Error":[]},"NullThrownError":{"Error":[]},"ArgumentError":{"Error":[]},"RangeError":{"Error":[]},"IndexError":{"Error":[]},"UnsupportedError":{"Error":[]},"UnimplementedError":{"Error":[]},"ConcurrentModificationError":{"Error":[]},"OutOfMemoryError":{"Error":[]},"StackOverflowError":{"Error":[]},"CyclicInitializationError":{"Error":[]},"_StringStackTrace":{"StackTrace":[]},"MouseEvent":{"Event":[]},"HtmlElement":{"Element":[],"EventTarget":[]},"AnchorElement":{"Element":[],"EventTarget":[]},"AreaElement":{"Element":[],"EventTarget":[]},"CanvasElement":{"Element":[],"EventTarget":[]},"CharacterData":{"EventTarget":[]},"Element":{"EventTarget":[]},"FormElement":{"Element":[],"EventTarget":[]},"ImageElement":{"Element":[],"EventTarget":[]},"Node":{"EventTarget":[]},"SelectElement":{"Element":[],"EventTarget":[]},"UIEvent":{"Event":[]},"Window":{"WindowBase":[],"EventTarget":[]},"_EventStream":{"Stream":["1"]},"_ElementEventStreamImpl":{"_EventStream":["1"],"Stream":["1"]},"_DOMWindowCrossFrame":{"WindowBase":[],"EventTarget":[]},"TileGrid":{"Grid":["Tile"],"Grid.T":"Tile"},"HoleTile":{"Tile":[]},"GroundTile":{"Tile":[]}}'));
+  A._Universe_addRules(init.typeUniverse, JSON.parse('{"PlainJavaScriptObject":"LegacyJavaScriptObject","UnknownJavaScriptObject":"LegacyJavaScriptObject","JavaScriptFunction":"LegacyJavaScriptObject","AbortPaymentEvent":"Event","ExtendableEvent":"Event","MathMLElement":"Element","AudioElement":"HtmlElement","MediaElement":"HtmlElement","HtmlDocument":"Node","Document":"Node","PointerEvent":"MouseEvent","CompositionEvent":"UIEvent","CDataSection":"CharacterData","Text":"CharacterData","JSBool":{"bool":[]},"JSArray":{"List":["1"],"Iterable":["1"]},"JSUnmodifiableArray":{"JSArray":["1"],"List":["1"],"Iterable":["1"]},"JSNumber":{"num":[]},"JSInt":{"int":[],"num":[]},"JSNumNotInt":{"num":[]},"JSString":{"String":[]},"LateError":{"Error":[]},"NullError":{"TypeError":[],"Error":[]},"JsNoSuchMethodError":{"Error":[]},"UnknownJsTypeError":{"Error":[]},"_StackTrace":{"StackTrace":[]},"Closure":{"Function":[]},"Closure0Args":{"Function":[]},"Closure2Args":{"Function":[]},"TearOffClosure":{"Function":[]},"StaticClosure":{"Function":[]},"BoundClosure":{"Function":[]},"RuntimeError":{"Error":[]},"_Error":{"Error":[]},"_TypeError":{"TypeError":[],"Error":[]},"_Future":{"Future":["1"]},"AsyncError":{"Error":[]},"_Zone":{"Zone":[]},"_RootZone":{"_Zone":[],"Zone":[]},"int":{"num":[]},"List":{"Iterable":["1"]},"AssertionError":{"Error":[]},"TypeError":{"Error":[]},"NullThrownError":{"Error":[]},"ArgumentError":{"Error":[]},"RangeError":{"Error":[]},"IndexError":{"Error":[]},"UnsupportedError":{"Error":[]},"UnimplementedError":{"Error":[]},"ConcurrentModificationError":{"Error":[]},"OutOfMemoryError":{"Error":[]},"StackOverflowError":{"Error":[]},"CyclicInitializationError":{"Error":[]},"_StringStackTrace":{"StackTrace":[]},"MouseEvent":{"Event":[]},"HtmlElement":{"Element":[],"EventTarget":[]},"AnchorElement":{"Element":[],"EventTarget":[]},"AreaElement":{"Element":[],"EventTarget":[]},"ButtonElement":{"Element":[],"EventTarget":[]},"CanvasElement":{"Element":[],"EventTarget":[]},"CharacterData":{"EventTarget":[]},"Element":{"EventTarget":[]},"FormElement":{"Element":[],"EventTarget":[]},"ImageElement":{"Element":[],"EventTarget":[]},"Node":{"EventTarget":[]},"SelectElement":{"Element":[],"EventTarget":[]},"UIEvent":{"Event":[]},"Window":{"WindowBase":[],"EventTarget":[]},"_EventStream":{"Stream":["1"]},"_ElementEventStreamImpl":{"_EventStream":["1"],"Stream":["1"]},"_DOMWindowCrossFrame":{"WindowBase":[],"EventTarget":[]},"UpdateTileBitmaskCommand":{"Command":[]},"UpdateTileBitmasksCommand":{"Command":[]},"TileBrush":{"Brush":["Tile"]},"DrawCommand":{"Command":[]},"TileGrid":{"Grid":["Tile"],"Grid.T":"Tile"},"SetTileCommand":{"Command":[]},"HoleTile":{"Tile":[]},"GroundTile":{"Tile":[]}}'));
   A._Universe_addErasedTypes(init.typeUniverse, JSON.parse('{"StreamSubscription":1}'));
   var string$ = {
     Error_: "Error handler must accept one Object or one Object and a StackTrace as arguments, and return a value of the returned future's type"
@@ -4585,6 +4647,7 @@
     var findType = A.findType;
     return {
       AsyncError: findType("AsyncError"),
+      ButtonElement: findType("ButtonElement"),
       CanvasElement: findType("CanvasElement"),
       CanvasRenderingContext2D: findType("CanvasRenderingContext2D"),
       Element: findType("Element"),
@@ -4843,7 +4906,13 @@
       var e = A.document().createElement("img");
       return e;
     });
-    _lazy($, "tileGrid", "$get$tileGrid", () => A.TileGrid$(10, 10, A.HoleTile$()));
+    _lazy($, "groundButton", "$get$groundButton", () => A.ButtonElement_ButtonElement());
+    _lazy($, "holeButton", "$get$holeButton", () => A.ButtonElement_ButtonElement());
+    _lazy($, "tileGrid", "$get$tileGrid", () => A.TileGrid$(10, 10, A.HoleTile$(16, true)));
+    _lazy($, "brush", "$get$brush", () => {
+      var t1 = $.$get$tileGrid();
+      return new A.TileBrush(A.GroundTile$(0, false), t1, new A.CommandManager(A._setArrayType([], A.findType("JSArray<Command>"))));
+    });
   })();
   (function nativeSupport() {
     !function() {
@@ -4868,8 +4937,8 @@
       }
       init.dispatchPropertyName = init.getIsolateTag("dispatch_record");
     }();
-    hunkHelpers.setOrUpdateInterceptorsByTag({DOMError: J.JavaScriptObject, MediaError: J.JavaScriptObject, NavigatorUserMediaError: J.JavaScriptObject, OverconstrainedError: J.JavaScriptObject, PositionError: J.JavaScriptObject, GeolocationPositionError: J.JavaScriptObject, WebGLRenderingContext: J.JavaScriptObject, WebGL2RenderingContext: J.JavaScriptObject, HTMLAudioElement: A.HtmlElement, HTMLBRElement: A.HtmlElement, HTMLBaseElement: A.HtmlElement, HTMLBodyElement: A.HtmlElement, HTMLButtonElement: A.HtmlElement, HTMLContentElement: A.HtmlElement, HTMLDListElement: A.HtmlElement, HTMLDataElement: A.HtmlElement, HTMLDataListElement: A.HtmlElement, HTMLDetailsElement: A.HtmlElement, HTMLDialogElement: A.HtmlElement, HTMLDivElement: A.HtmlElement, HTMLEmbedElement: A.HtmlElement, HTMLFieldSetElement: A.HtmlElement, HTMLHRElement: A.HtmlElement, HTMLHeadElement: A.HtmlElement, HTMLHeadingElement: A.HtmlElement, HTMLHtmlElement: A.HtmlElement, HTMLIFrameElement: A.HtmlElement, HTMLInputElement: A.HtmlElement, HTMLLIElement: A.HtmlElement, HTMLLabelElement: A.HtmlElement, HTMLLegendElement: A.HtmlElement, HTMLLinkElement: A.HtmlElement, HTMLMapElement: A.HtmlElement, HTMLMediaElement: A.HtmlElement, HTMLMenuElement: A.HtmlElement, HTMLMetaElement: A.HtmlElement, HTMLMeterElement: A.HtmlElement, HTMLModElement: A.HtmlElement, HTMLOListElement: A.HtmlElement, HTMLObjectElement: A.HtmlElement, HTMLOptGroupElement: A.HtmlElement, HTMLOptionElement: A.HtmlElement, HTMLOutputElement: A.HtmlElement, HTMLParagraphElement: A.HtmlElement, HTMLParamElement: A.HtmlElement, HTMLPictureElement: A.HtmlElement, HTMLPreElement: A.HtmlElement, HTMLProgressElement: A.HtmlElement, HTMLQuoteElement: A.HtmlElement, HTMLScriptElement: A.HtmlElement, HTMLShadowElement: A.HtmlElement, HTMLSlotElement: A.HtmlElement, HTMLSourceElement: A.HtmlElement, HTMLSpanElement: A.HtmlElement, HTMLStyleElement: A.HtmlElement, HTMLTableCaptionElement: A.HtmlElement, HTMLTableCellElement: A.HtmlElement, HTMLTableDataCellElement: A.HtmlElement, HTMLTableHeaderCellElement: A.HtmlElement, HTMLTableColElement: A.HtmlElement, HTMLTableElement: A.HtmlElement, HTMLTableRowElement: A.HtmlElement, HTMLTableSectionElement: A.HtmlElement, HTMLTemplateElement: A.HtmlElement, HTMLTextAreaElement: A.HtmlElement, HTMLTimeElement: A.HtmlElement, HTMLTitleElement: A.HtmlElement, HTMLTrackElement: A.HtmlElement, HTMLUListElement: A.HtmlElement, HTMLUnknownElement: A.HtmlElement, HTMLVideoElement: A.HtmlElement, HTMLDirectoryElement: A.HtmlElement, HTMLFontElement: A.HtmlElement, HTMLFrameElement: A.HtmlElement, HTMLFrameSetElement: A.HtmlElement, HTMLMarqueeElement: A.HtmlElement, HTMLElement: A.HtmlElement, HTMLAnchorElement: A.AnchorElement, HTMLAreaElement: A.AreaElement, HTMLCanvasElement: A.CanvasElement, CanvasRenderingContext2D: A.CanvasRenderingContext2D, CDATASection: A.CharacterData, CharacterData: A.CharacterData, Comment: A.CharacterData, ProcessingInstruction: A.CharacterData, Text: A.CharacterData, DOMException: A.DomException, DOMRectReadOnly: A.DomRectReadOnly, MathMLElement: A.Element, SVGAElement: A.Element, SVGAnimateElement: A.Element, SVGAnimateMotionElement: A.Element, SVGAnimateTransformElement: A.Element, SVGAnimationElement: A.Element, SVGCircleElement: A.Element, SVGClipPathElement: A.Element, SVGDefsElement: A.Element, SVGDescElement: A.Element, SVGDiscardElement: A.Element, SVGEllipseElement: A.Element, SVGFEBlendElement: A.Element, SVGFEColorMatrixElement: A.Element, SVGFEComponentTransferElement: A.Element, SVGFECompositeElement: A.Element, SVGFEConvolveMatrixElement: A.Element, SVGFEDiffuseLightingElement: A.Element, SVGFEDisplacementMapElement: A.Element, SVGFEDistantLightElement: A.Element, SVGFEFloodElement: A.Element, SVGFEFuncAElement: A.Element, SVGFEFuncBElement: A.Element, SVGFEFuncGElement: A.Element, SVGFEFuncRElement: A.Element, SVGFEGaussianBlurElement: A.Element, SVGFEImageElement: A.Element, SVGFEMergeElement: A.Element, SVGFEMergeNodeElement: A.Element, SVGFEMorphologyElement: A.Element, SVGFEOffsetElement: A.Element, SVGFEPointLightElement: A.Element, SVGFESpecularLightingElement: A.Element, SVGFESpotLightElement: A.Element, SVGFETileElement: A.Element, SVGFETurbulenceElement: A.Element, SVGFilterElement: A.Element, SVGForeignObjectElement: A.Element, SVGGElement: A.Element, SVGGeometryElement: A.Element, SVGGraphicsElement: A.Element, SVGImageElement: A.Element, SVGLineElement: A.Element, SVGLinearGradientElement: A.Element, SVGMarkerElement: A.Element, SVGMaskElement: A.Element, SVGMetadataElement: A.Element, SVGPathElement: A.Element, SVGPatternElement: A.Element, SVGPolygonElement: A.Element, SVGPolylineElement: A.Element, SVGRadialGradientElement: A.Element, SVGRectElement: A.Element, SVGScriptElement: A.Element, SVGSetElement: A.Element, SVGStopElement: A.Element, SVGStyleElement: A.Element, SVGElement: A.Element, SVGSVGElement: A.Element, SVGSwitchElement: A.Element, SVGSymbolElement: A.Element, SVGTSpanElement: A.Element, SVGTextContentElement: A.Element, SVGTextElement: A.Element, SVGTextPathElement: A.Element, SVGTextPositioningElement: A.Element, SVGTitleElement: A.Element, SVGUseElement: A.Element, SVGViewElement: A.Element, SVGGradientElement: A.Element, SVGComponentTransferFunctionElement: A.Element, SVGFEDropShadowElement: A.Element, SVGMPathElement: A.Element, Element: A.Element, AbortPaymentEvent: A.Event, AnimationEvent: A.Event, AnimationPlaybackEvent: A.Event, ApplicationCacheErrorEvent: A.Event, BackgroundFetchClickEvent: A.Event, BackgroundFetchEvent: A.Event, BackgroundFetchFailEvent: A.Event, BackgroundFetchedEvent: A.Event, BeforeInstallPromptEvent: A.Event, BeforeUnloadEvent: A.Event, BlobEvent: A.Event, CanMakePaymentEvent: A.Event, ClipboardEvent: A.Event, CloseEvent: A.Event, CustomEvent: A.Event, DeviceMotionEvent: A.Event, DeviceOrientationEvent: A.Event, ErrorEvent: A.Event, ExtendableEvent: A.Event, ExtendableMessageEvent: A.Event, FetchEvent: A.Event, FontFaceSetLoadEvent: A.Event, ForeignFetchEvent: A.Event, GamepadEvent: A.Event, HashChangeEvent: A.Event, InstallEvent: A.Event, MediaEncryptedEvent: A.Event, MediaKeyMessageEvent: A.Event, MediaQueryListEvent: A.Event, MediaStreamEvent: A.Event, MediaStreamTrackEvent: A.Event, MessageEvent: A.Event, MIDIConnectionEvent: A.Event, MIDIMessageEvent: A.Event, MutationEvent: A.Event, NotificationEvent: A.Event, PageTransitionEvent: A.Event, PaymentRequestEvent: A.Event, PaymentRequestUpdateEvent: A.Event, PopStateEvent: A.Event, PresentationConnectionAvailableEvent: A.Event, PresentationConnectionCloseEvent: A.Event, ProgressEvent: A.Event, PromiseRejectionEvent: A.Event, PushEvent: A.Event, RTCDataChannelEvent: A.Event, RTCDTMFToneChangeEvent: A.Event, RTCPeerConnectionIceEvent: A.Event, RTCTrackEvent: A.Event, SecurityPolicyViolationEvent: A.Event, SensorErrorEvent: A.Event, SpeechRecognitionError: A.Event, SpeechRecognitionEvent: A.Event, SpeechSynthesisEvent: A.Event, StorageEvent: A.Event, SyncEvent: A.Event, TrackEvent: A.Event, TransitionEvent: A.Event, WebKitTransitionEvent: A.Event, VRDeviceEvent: A.Event, VRDisplayEvent: A.Event, VRSessionEvent: A.Event, MojoInterfaceRequestEvent: A.Event, ResourceProgressEvent: A.Event, USBConnectionEvent: A.Event, IDBVersionChangeEvent: A.Event, AudioProcessingEvent: A.Event, OfflineAudioCompletionEvent: A.Event, WebGLContextEvent: A.Event, Event: A.Event, InputEvent: A.Event, SubmitEvent: A.Event, EventTarget: A.EventTarget, HTMLFormElement: A.FormElement, HTMLImageElement: A.ImageElement, MouseEvent: A.MouseEvent, DragEvent: A.MouseEvent, PointerEvent: A.MouseEvent, WheelEvent: A.MouseEvent, Document: A.Node, DocumentFragment: A.Node, HTMLDocument: A.Node, ShadowRoot: A.Node, XMLDocument: A.Node, Attr: A.Node, DocumentType: A.Node, Node: A.Node, HTMLSelectElement: A.SelectElement, CompositionEvent: A.UIEvent, FocusEvent: A.UIEvent, KeyboardEvent: A.UIEvent, TextEvent: A.UIEvent, TouchEvent: A.UIEvent, UIEvent: A.UIEvent, Window: A.Window, DOMWindow: A.Window, ClientRect: A._DomRect, DOMRect: A._DomRect});
-    hunkHelpers.setOrUpdateLeafTags({DOMError: true, MediaError: true, NavigatorUserMediaError: true, OverconstrainedError: true, PositionError: true, GeolocationPositionError: true, WebGLRenderingContext: true, WebGL2RenderingContext: true, HTMLAudioElement: true, HTMLBRElement: true, HTMLBaseElement: true, HTMLBodyElement: true, HTMLButtonElement: true, HTMLContentElement: true, HTMLDListElement: true, HTMLDataElement: true, HTMLDataListElement: true, HTMLDetailsElement: true, HTMLDialogElement: true, HTMLDivElement: true, HTMLEmbedElement: true, HTMLFieldSetElement: true, HTMLHRElement: true, HTMLHeadElement: true, HTMLHeadingElement: true, HTMLHtmlElement: true, HTMLIFrameElement: true, HTMLInputElement: true, HTMLLIElement: true, HTMLLabelElement: true, HTMLLegendElement: true, HTMLLinkElement: true, HTMLMapElement: true, HTMLMediaElement: true, HTMLMenuElement: true, HTMLMetaElement: true, HTMLMeterElement: true, HTMLModElement: true, HTMLOListElement: true, HTMLObjectElement: true, HTMLOptGroupElement: true, HTMLOptionElement: true, HTMLOutputElement: true, HTMLParagraphElement: true, HTMLParamElement: true, HTMLPictureElement: true, HTMLPreElement: true, HTMLProgressElement: true, HTMLQuoteElement: true, HTMLScriptElement: true, HTMLShadowElement: true, HTMLSlotElement: true, HTMLSourceElement: true, HTMLSpanElement: true, HTMLStyleElement: true, HTMLTableCaptionElement: true, HTMLTableCellElement: true, HTMLTableDataCellElement: true, HTMLTableHeaderCellElement: true, HTMLTableColElement: true, HTMLTableElement: true, HTMLTableRowElement: true, HTMLTableSectionElement: true, HTMLTemplateElement: true, HTMLTextAreaElement: true, HTMLTimeElement: true, HTMLTitleElement: true, HTMLTrackElement: true, HTMLUListElement: true, HTMLUnknownElement: true, HTMLVideoElement: true, HTMLDirectoryElement: true, HTMLFontElement: true, HTMLFrameElement: true, HTMLFrameSetElement: true, HTMLMarqueeElement: true, HTMLElement: false, HTMLAnchorElement: true, HTMLAreaElement: true, HTMLCanvasElement: true, CanvasRenderingContext2D: true, CDATASection: true, CharacterData: true, Comment: true, ProcessingInstruction: true, Text: true, DOMException: true, DOMRectReadOnly: false, MathMLElement: true, SVGAElement: true, SVGAnimateElement: true, SVGAnimateMotionElement: true, SVGAnimateTransformElement: true, SVGAnimationElement: true, SVGCircleElement: true, SVGClipPathElement: true, SVGDefsElement: true, SVGDescElement: true, SVGDiscardElement: true, SVGEllipseElement: true, SVGFEBlendElement: true, SVGFEColorMatrixElement: true, SVGFEComponentTransferElement: true, SVGFECompositeElement: true, SVGFEConvolveMatrixElement: true, SVGFEDiffuseLightingElement: true, SVGFEDisplacementMapElement: true, SVGFEDistantLightElement: true, SVGFEFloodElement: true, SVGFEFuncAElement: true, SVGFEFuncBElement: true, SVGFEFuncGElement: true, SVGFEFuncRElement: true, SVGFEGaussianBlurElement: true, SVGFEImageElement: true, SVGFEMergeElement: true, SVGFEMergeNodeElement: true, SVGFEMorphologyElement: true, SVGFEOffsetElement: true, SVGFEPointLightElement: true, SVGFESpecularLightingElement: true, SVGFESpotLightElement: true, SVGFETileElement: true, SVGFETurbulenceElement: true, SVGFilterElement: true, SVGForeignObjectElement: true, SVGGElement: true, SVGGeometryElement: true, SVGGraphicsElement: true, SVGImageElement: true, SVGLineElement: true, SVGLinearGradientElement: true, SVGMarkerElement: true, SVGMaskElement: true, SVGMetadataElement: true, SVGPathElement: true, SVGPatternElement: true, SVGPolygonElement: true, SVGPolylineElement: true, SVGRadialGradientElement: true, SVGRectElement: true, SVGScriptElement: true, SVGSetElement: true, SVGStopElement: true, SVGStyleElement: true, SVGElement: true, SVGSVGElement: true, SVGSwitchElement: true, SVGSymbolElement: true, SVGTSpanElement: true, SVGTextContentElement: true, SVGTextElement: true, SVGTextPathElement: true, SVGTextPositioningElement: true, SVGTitleElement: true, SVGUseElement: true, SVGViewElement: true, SVGGradientElement: true, SVGComponentTransferFunctionElement: true, SVGFEDropShadowElement: true, SVGMPathElement: true, Element: false, AbortPaymentEvent: true, AnimationEvent: true, AnimationPlaybackEvent: true, ApplicationCacheErrorEvent: true, BackgroundFetchClickEvent: true, BackgroundFetchEvent: true, BackgroundFetchFailEvent: true, BackgroundFetchedEvent: true, BeforeInstallPromptEvent: true, BeforeUnloadEvent: true, BlobEvent: true, CanMakePaymentEvent: true, ClipboardEvent: true, CloseEvent: true, CustomEvent: true, DeviceMotionEvent: true, DeviceOrientationEvent: true, ErrorEvent: true, ExtendableEvent: true, ExtendableMessageEvent: true, FetchEvent: true, FontFaceSetLoadEvent: true, ForeignFetchEvent: true, GamepadEvent: true, HashChangeEvent: true, InstallEvent: true, MediaEncryptedEvent: true, MediaKeyMessageEvent: true, MediaQueryListEvent: true, MediaStreamEvent: true, MediaStreamTrackEvent: true, MessageEvent: true, MIDIConnectionEvent: true, MIDIMessageEvent: true, MutationEvent: true, NotificationEvent: true, PageTransitionEvent: true, PaymentRequestEvent: true, PaymentRequestUpdateEvent: true, PopStateEvent: true, PresentationConnectionAvailableEvent: true, PresentationConnectionCloseEvent: true, ProgressEvent: true, PromiseRejectionEvent: true, PushEvent: true, RTCDataChannelEvent: true, RTCDTMFToneChangeEvent: true, RTCPeerConnectionIceEvent: true, RTCTrackEvent: true, SecurityPolicyViolationEvent: true, SensorErrorEvent: true, SpeechRecognitionError: true, SpeechRecognitionEvent: true, SpeechSynthesisEvent: true, StorageEvent: true, SyncEvent: true, TrackEvent: true, TransitionEvent: true, WebKitTransitionEvent: true, VRDeviceEvent: true, VRDisplayEvent: true, VRSessionEvent: true, MojoInterfaceRequestEvent: true, ResourceProgressEvent: true, USBConnectionEvent: true, IDBVersionChangeEvent: true, AudioProcessingEvent: true, OfflineAudioCompletionEvent: true, WebGLContextEvent: true, Event: false, InputEvent: false, SubmitEvent: false, EventTarget: false, HTMLFormElement: true, HTMLImageElement: true, MouseEvent: true, DragEvent: true, PointerEvent: true, WheelEvent: true, Document: true, DocumentFragment: true, HTMLDocument: true, ShadowRoot: true, XMLDocument: true, Attr: true, DocumentType: true, Node: false, HTMLSelectElement: true, CompositionEvent: true, FocusEvent: true, KeyboardEvent: true, TextEvent: true, TouchEvent: true, UIEvent: false, Window: true, DOMWindow: true, ClientRect: true, DOMRect: true});
+    hunkHelpers.setOrUpdateInterceptorsByTag({DOMError: J.JavaScriptObject, MediaError: J.JavaScriptObject, NavigatorUserMediaError: J.JavaScriptObject, OverconstrainedError: J.JavaScriptObject, PositionError: J.JavaScriptObject, GeolocationPositionError: J.JavaScriptObject, WebGLRenderingContext: J.JavaScriptObject, WebGL2RenderingContext: J.JavaScriptObject, HTMLAudioElement: A.HtmlElement, HTMLBRElement: A.HtmlElement, HTMLBaseElement: A.HtmlElement, HTMLBodyElement: A.HtmlElement, HTMLContentElement: A.HtmlElement, HTMLDListElement: A.HtmlElement, HTMLDataElement: A.HtmlElement, HTMLDataListElement: A.HtmlElement, HTMLDetailsElement: A.HtmlElement, HTMLDialogElement: A.HtmlElement, HTMLDivElement: A.HtmlElement, HTMLEmbedElement: A.HtmlElement, HTMLFieldSetElement: A.HtmlElement, HTMLHRElement: A.HtmlElement, HTMLHeadElement: A.HtmlElement, HTMLHeadingElement: A.HtmlElement, HTMLHtmlElement: A.HtmlElement, HTMLIFrameElement: A.HtmlElement, HTMLInputElement: A.HtmlElement, HTMLLIElement: A.HtmlElement, HTMLLabelElement: A.HtmlElement, HTMLLegendElement: A.HtmlElement, HTMLLinkElement: A.HtmlElement, HTMLMapElement: A.HtmlElement, HTMLMediaElement: A.HtmlElement, HTMLMenuElement: A.HtmlElement, HTMLMetaElement: A.HtmlElement, HTMLMeterElement: A.HtmlElement, HTMLModElement: A.HtmlElement, HTMLOListElement: A.HtmlElement, HTMLObjectElement: A.HtmlElement, HTMLOptGroupElement: A.HtmlElement, HTMLOptionElement: A.HtmlElement, HTMLOutputElement: A.HtmlElement, HTMLParagraphElement: A.HtmlElement, HTMLParamElement: A.HtmlElement, HTMLPictureElement: A.HtmlElement, HTMLPreElement: A.HtmlElement, HTMLProgressElement: A.HtmlElement, HTMLQuoteElement: A.HtmlElement, HTMLScriptElement: A.HtmlElement, HTMLShadowElement: A.HtmlElement, HTMLSlotElement: A.HtmlElement, HTMLSourceElement: A.HtmlElement, HTMLSpanElement: A.HtmlElement, HTMLStyleElement: A.HtmlElement, HTMLTableCaptionElement: A.HtmlElement, HTMLTableCellElement: A.HtmlElement, HTMLTableDataCellElement: A.HtmlElement, HTMLTableHeaderCellElement: A.HtmlElement, HTMLTableColElement: A.HtmlElement, HTMLTableElement: A.HtmlElement, HTMLTableRowElement: A.HtmlElement, HTMLTableSectionElement: A.HtmlElement, HTMLTemplateElement: A.HtmlElement, HTMLTextAreaElement: A.HtmlElement, HTMLTimeElement: A.HtmlElement, HTMLTitleElement: A.HtmlElement, HTMLTrackElement: A.HtmlElement, HTMLUListElement: A.HtmlElement, HTMLUnknownElement: A.HtmlElement, HTMLVideoElement: A.HtmlElement, HTMLDirectoryElement: A.HtmlElement, HTMLFontElement: A.HtmlElement, HTMLFrameElement: A.HtmlElement, HTMLFrameSetElement: A.HtmlElement, HTMLMarqueeElement: A.HtmlElement, HTMLElement: A.HtmlElement, HTMLAnchorElement: A.AnchorElement, HTMLAreaElement: A.AreaElement, HTMLButtonElement: A.ButtonElement, HTMLCanvasElement: A.CanvasElement, CanvasRenderingContext2D: A.CanvasRenderingContext2D, CDATASection: A.CharacterData, CharacterData: A.CharacterData, Comment: A.CharacterData, ProcessingInstruction: A.CharacterData, Text: A.CharacterData, DOMException: A.DomException, DOMRectReadOnly: A.DomRectReadOnly, MathMLElement: A.Element, SVGAElement: A.Element, SVGAnimateElement: A.Element, SVGAnimateMotionElement: A.Element, SVGAnimateTransformElement: A.Element, SVGAnimationElement: A.Element, SVGCircleElement: A.Element, SVGClipPathElement: A.Element, SVGDefsElement: A.Element, SVGDescElement: A.Element, SVGDiscardElement: A.Element, SVGEllipseElement: A.Element, SVGFEBlendElement: A.Element, SVGFEColorMatrixElement: A.Element, SVGFEComponentTransferElement: A.Element, SVGFECompositeElement: A.Element, SVGFEConvolveMatrixElement: A.Element, SVGFEDiffuseLightingElement: A.Element, SVGFEDisplacementMapElement: A.Element, SVGFEDistantLightElement: A.Element, SVGFEFloodElement: A.Element, SVGFEFuncAElement: A.Element, SVGFEFuncBElement: A.Element, SVGFEFuncGElement: A.Element, SVGFEFuncRElement: A.Element, SVGFEGaussianBlurElement: A.Element, SVGFEImageElement: A.Element, SVGFEMergeElement: A.Element, SVGFEMergeNodeElement: A.Element, SVGFEMorphologyElement: A.Element, SVGFEOffsetElement: A.Element, SVGFEPointLightElement: A.Element, SVGFESpecularLightingElement: A.Element, SVGFESpotLightElement: A.Element, SVGFETileElement: A.Element, SVGFETurbulenceElement: A.Element, SVGFilterElement: A.Element, SVGForeignObjectElement: A.Element, SVGGElement: A.Element, SVGGeometryElement: A.Element, SVGGraphicsElement: A.Element, SVGImageElement: A.Element, SVGLineElement: A.Element, SVGLinearGradientElement: A.Element, SVGMarkerElement: A.Element, SVGMaskElement: A.Element, SVGMetadataElement: A.Element, SVGPathElement: A.Element, SVGPatternElement: A.Element, SVGPolygonElement: A.Element, SVGPolylineElement: A.Element, SVGRadialGradientElement: A.Element, SVGRectElement: A.Element, SVGScriptElement: A.Element, SVGSetElement: A.Element, SVGStopElement: A.Element, SVGStyleElement: A.Element, SVGElement: A.Element, SVGSVGElement: A.Element, SVGSwitchElement: A.Element, SVGSymbolElement: A.Element, SVGTSpanElement: A.Element, SVGTextContentElement: A.Element, SVGTextElement: A.Element, SVGTextPathElement: A.Element, SVGTextPositioningElement: A.Element, SVGTitleElement: A.Element, SVGUseElement: A.Element, SVGViewElement: A.Element, SVGGradientElement: A.Element, SVGComponentTransferFunctionElement: A.Element, SVGFEDropShadowElement: A.Element, SVGMPathElement: A.Element, Element: A.Element, AbortPaymentEvent: A.Event, AnimationEvent: A.Event, AnimationPlaybackEvent: A.Event, ApplicationCacheErrorEvent: A.Event, BackgroundFetchClickEvent: A.Event, BackgroundFetchEvent: A.Event, BackgroundFetchFailEvent: A.Event, BackgroundFetchedEvent: A.Event, BeforeInstallPromptEvent: A.Event, BeforeUnloadEvent: A.Event, BlobEvent: A.Event, CanMakePaymentEvent: A.Event, ClipboardEvent: A.Event, CloseEvent: A.Event, CustomEvent: A.Event, DeviceMotionEvent: A.Event, DeviceOrientationEvent: A.Event, ErrorEvent: A.Event, ExtendableEvent: A.Event, ExtendableMessageEvent: A.Event, FetchEvent: A.Event, FontFaceSetLoadEvent: A.Event, ForeignFetchEvent: A.Event, GamepadEvent: A.Event, HashChangeEvent: A.Event, InstallEvent: A.Event, MediaEncryptedEvent: A.Event, MediaKeyMessageEvent: A.Event, MediaQueryListEvent: A.Event, MediaStreamEvent: A.Event, MediaStreamTrackEvent: A.Event, MessageEvent: A.Event, MIDIConnectionEvent: A.Event, MIDIMessageEvent: A.Event, MutationEvent: A.Event, NotificationEvent: A.Event, PageTransitionEvent: A.Event, PaymentRequestEvent: A.Event, PaymentRequestUpdateEvent: A.Event, PopStateEvent: A.Event, PresentationConnectionAvailableEvent: A.Event, PresentationConnectionCloseEvent: A.Event, ProgressEvent: A.Event, PromiseRejectionEvent: A.Event, PushEvent: A.Event, RTCDataChannelEvent: A.Event, RTCDTMFToneChangeEvent: A.Event, RTCPeerConnectionIceEvent: A.Event, RTCTrackEvent: A.Event, SecurityPolicyViolationEvent: A.Event, SensorErrorEvent: A.Event, SpeechRecognitionError: A.Event, SpeechRecognitionEvent: A.Event, SpeechSynthesisEvent: A.Event, StorageEvent: A.Event, SyncEvent: A.Event, TrackEvent: A.Event, TransitionEvent: A.Event, WebKitTransitionEvent: A.Event, VRDeviceEvent: A.Event, VRDisplayEvent: A.Event, VRSessionEvent: A.Event, MojoInterfaceRequestEvent: A.Event, ResourceProgressEvent: A.Event, USBConnectionEvent: A.Event, IDBVersionChangeEvent: A.Event, AudioProcessingEvent: A.Event, OfflineAudioCompletionEvent: A.Event, WebGLContextEvent: A.Event, Event: A.Event, InputEvent: A.Event, SubmitEvent: A.Event, EventTarget: A.EventTarget, HTMLFormElement: A.FormElement, HTMLImageElement: A.ImageElement, MouseEvent: A.MouseEvent, DragEvent: A.MouseEvent, PointerEvent: A.MouseEvent, WheelEvent: A.MouseEvent, Document: A.Node, DocumentFragment: A.Node, HTMLDocument: A.Node, ShadowRoot: A.Node, XMLDocument: A.Node, Attr: A.Node, DocumentType: A.Node, Node: A.Node, HTMLSelectElement: A.SelectElement, CompositionEvent: A.UIEvent, FocusEvent: A.UIEvent, KeyboardEvent: A.UIEvent, TextEvent: A.UIEvent, TouchEvent: A.UIEvent, UIEvent: A.UIEvent, Window: A.Window, DOMWindow: A.Window, ClientRect: A._DomRect, DOMRect: A._DomRect});
+    hunkHelpers.setOrUpdateLeafTags({DOMError: true, MediaError: true, NavigatorUserMediaError: true, OverconstrainedError: true, PositionError: true, GeolocationPositionError: true, WebGLRenderingContext: true, WebGL2RenderingContext: true, HTMLAudioElement: true, HTMLBRElement: true, HTMLBaseElement: true, HTMLBodyElement: true, HTMLContentElement: true, HTMLDListElement: true, HTMLDataElement: true, HTMLDataListElement: true, HTMLDetailsElement: true, HTMLDialogElement: true, HTMLDivElement: true, HTMLEmbedElement: true, HTMLFieldSetElement: true, HTMLHRElement: true, HTMLHeadElement: true, HTMLHeadingElement: true, HTMLHtmlElement: true, HTMLIFrameElement: true, HTMLInputElement: true, HTMLLIElement: true, HTMLLabelElement: true, HTMLLegendElement: true, HTMLLinkElement: true, HTMLMapElement: true, HTMLMediaElement: true, HTMLMenuElement: true, HTMLMetaElement: true, HTMLMeterElement: true, HTMLModElement: true, HTMLOListElement: true, HTMLObjectElement: true, HTMLOptGroupElement: true, HTMLOptionElement: true, HTMLOutputElement: true, HTMLParagraphElement: true, HTMLParamElement: true, HTMLPictureElement: true, HTMLPreElement: true, HTMLProgressElement: true, HTMLQuoteElement: true, HTMLScriptElement: true, HTMLShadowElement: true, HTMLSlotElement: true, HTMLSourceElement: true, HTMLSpanElement: true, HTMLStyleElement: true, HTMLTableCaptionElement: true, HTMLTableCellElement: true, HTMLTableDataCellElement: true, HTMLTableHeaderCellElement: true, HTMLTableColElement: true, HTMLTableElement: true, HTMLTableRowElement: true, HTMLTableSectionElement: true, HTMLTemplateElement: true, HTMLTextAreaElement: true, HTMLTimeElement: true, HTMLTitleElement: true, HTMLTrackElement: true, HTMLUListElement: true, HTMLUnknownElement: true, HTMLVideoElement: true, HTMLDirectoryElement: true, HTMLFontElement: true, HTMLFrameElement: true, HTMLFrameSetElement: true, HTMLMarqueeElement: true, HTMLElement: false, HTMLAnchorElement: true, HTMLAreaElement: true, HTMLButtonElement: true, HTMLCanvasElement: true, CanvasRenderingContext2D: true, CDATASection: true, CharacterData: true, Comment: true, ProcessingInstruction: true, Text: true, DOMException: true, DOMRectReadOnly: false, MathMLElement: true, SVGAElement: true, SVGAnimateElement: true, SVGAnimateMotionElement: true, SVGAnimateTransformElement: true, SVGAnimationElement: true, SVGCircleElement: true, SVGClipPathElement: true, SVGDefsElement: true, SVGDescElement: true, SVGDiscardElement: true, SVGEllipseElement: true, SVGFEBlendElement: true, SVGFEColorMatrixElement: true, SVGFEComponentTransferElement: true, SVGFECompositeElement: true, SVGFEConvolveMatrixElement: true, SVGFEDiffuseLightingElement: true, SVGFEDisplacementMapElement: true, SVGFEDistantLightElement: true, SVGFEFloodElement: true, SVGFEFuncAElement: true, SVGFEFuncBElement: true, SVGFEFuncGElement: true, SVGFEFuncRElement: true, SVGFEGaussianBlurElement: true, SVGFEImageElement: true, SVGFEMergeElement: true, SVGFEMergeNodeElement: true, SVGFEMorphologyElement: true, SVGFEOffsetElement: true, SVGFEPointLightElement: true, SVGFESpecularLightingElement: true, SVGFESpotLightElement: true, SVGFETileElement: true, SVGFETurbulenceElement: true, SVGFilterElement: true, SVGForeignObjectElement: true, SVGGElement: true, SVGGeometryElement: true, SVGGraphicsElement: true, SVGImageElement: true, SVGLineElement: true, SVGLinearGradientElement: true, SVGMarkerElement: true, SVGMaskElement: true, SVGMetadataElement: true, SVGPathElement: true, SVGPatternElement: true, SVGPolygonElement: true, SVGPolylineElement: true, SVGRadialGradientElement: true, SVGRectElement: true, SVGScriptElement: true, SVGSetElement: true, SVGStopElement: true, SVGStyleElement: true, SVGElement: true, SVGSVGElement: true, SVGSwitchElement: true, SVGSymbolElement: true, SVGTSpanElement: true, SVGTextContentElement: true, SVGTextElement: true, SVGTextPathElement: true, SVGTextPositioningElement: true, SVGTitleElement: true, SVGUseElement: true, SVGViewElement: true, SVGGradientElement: true, SVGComponentTransferFunctionElement: true, SVGFEDropShadowElement: true, SVGMPathElement: true, Element: false, AbortPaymentEvent: true, AnimationEvent: true, AnimationPlaybackEvent: true, ApplicationCacheErrorEvent: true, BackgroundFetchClickEvent: true, BackgroundFetchEvent: true, BackgroundFetchFailEvent: true, BackgroundFetchedEvent: true, BeforeInstallPromptEvent: true, BeforeUnloadEvent: true, BlobEvent: true, CanMakePaymentEvent: true, ClipboardEvent: true, CloseEvent: true, CustomEvent: true, DeviceMotionEvent: true, DeviceOrientationEvent: true, ErrorEvent: true, ExtendableEvent: true, ExtendableMessageEvent: true, FetchEvent: true, FontFaceSetLoadEvent: true, ForeignFetchEvent: true, GamepadEvent: true, HashChangeEvent: true, InstallEvent: true, MediaEncryptedEvent: true, MediaKeyMessageEvent: true, MediaQueryListEvent: true, MediaStreamEvent: true, MediaStreamTrackEvent: true, MessageEvent: true, MIDIConnectionEvent: true, MIDIMessageEvent: true, MutationEvent: true, NotificationEvent: true, PageTransitionEvent: true, PaymentRequestEvent: true, PaymentRequestUpdateEvent: true, PopStateEvent: true, PresentationConnectionAvailableEvent: true, PresentationConnectionCloseEvent: true, ProgressEvent: true, PromiseRejectionEvent: true, PushEvent: true, RTCDataChannelEvent: true, RTCDTMFToneChangeEvent: true, RTCPeerConnectionIceEvent: true, RTCTrackEvent: true, SecurityPolicyViolationEvent: true, SensorErrorEvent: true, SpeechRecognitionError: true, SpeechRecognitionEvent: true, SpeechSynthesisEvent: true, StorageEvent: true, SyncEvent: true, TrackEvent: true, TransitionEvent: true, WebKitTransitionEvent: true, VRDeviceEvent: true, VRDisplayEvent: true, VRSessionEvent: true, MojoInterfaceRequestEvent: true, ResourceProgressEvent: true, USBConnectionEvent: true, IDBVersionChangeEvent: true, AudioProcessingEvent: true, OfflineAudioCompletionEvent: true, WebGLContextEvent: true, Event: false, InputEvent: false, SubmitEvent: false, EventTarget: false, HTMLFormElement: true, HTMLImageElement: true, MouseEvent: true, DragEvent: true, PointerEvent: true, WheelEvent: true, Document: true, DocumentFragment: true, HTMLDocument: true, ShadowRoot: true, XMLDocument: true, Attr: true, DocumentType: true, Node: false, HTMLSelectElement: true, CompositionEvent: true, FocusEvent: true, KeyboardEvent: true, TextEvent: true, TouchEvent: true, UIEvent: false, Window: true, DOMWindow: true, ClientRect: true, DOMRect: true});
   })();
   convertAllToFastObject(holders);
   convertToFastObject($);

@@ -17,7 +17,8 @@ class TileBrush extends Brush<Tile> {
   TileBrush(this.grid, this.currentTile);
 
   void draw(Position position) {
-    drawCommands.execute(DrawCommand(this.grid, this.currentTile, position));
+    drawCommands
+        .execute(DrawCommand(this.grid, this.currentTile.clone(), position));
   }
 
   void undo() {

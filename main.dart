@@ -2,6 +2,7 @@ import 'dart:html';
 import 'dart:async';
 
 import 'Commands/draw.dart';
+import 'Models/brush.dart';
 import 'Models/grid.dart';
 import 'Models/tile.dart';
 import 'Types/position.dart';
@@ -22,20 +23,29 @@ CanvasRenderingContext2D? ctx;
 const tilemapSrc = 'dungeon_tilemap.png';
 
 ImageElement tilemapImage = ImageElement();
+ButtonElement groundButton = ButtonElement();
+ButtonElement holeButton = ButtonElement();
 TileGrid tileGrid = TileGrid(GRID_HEIGHT, GRID_WIDTH, fillValue: HoleTile());
+TileBrush brush = TileBrush(tileGrid, GroundTile());
 
 void main() {
+  groundButton = querySelector('#GroundTile') as ButtonElement;
+  holeButton = querySelector('#HoleTile') as ButtonElement;
   canvas = querySelector('#canvas') as CanvasElement;
   ctx = canvas!.getContext('2d') as CanvasRenderingContext2D;
   tilemapImage.src = tilemapSrc;
   render();
 
+  groundButton.onClick.listen((event) {
+    brush.updateCurrentPaint(GroundTile());
+  });
+  holeButton.onClick.listen((event) {
+    brush.updateCurrentPaint(HoleTile());
+  });
   canvas?.onMouseDown.listen((event) {
-    print(event);
-    print(event.offset);
     Position clickedPosition = calculateEventPosition(
         CANVAS_TILE_PIXEL_SIZE, event.offset.x as int, event.offset.y as int);
-    new DrawCommand(tileGrid, GroundTile(), clickedPosition).execute();
+    brush.draw(clickedPosition);
     render();
   });
 }
