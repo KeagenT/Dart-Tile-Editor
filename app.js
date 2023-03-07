@@ -239,6 +239,9 @@
     LateError$fieldNI(fieldName) {
       return new A.LateError("Field '" + fieldName + "' has not been initialized.");
     },
+    checkNotNullable(value, $name, $T) {
+      return value;
+    },
     LateError: function LateError(t0) {
       this._message = t0;
     },
@@ -321,6 +324,191 @@
     },
     throwConcurrentModificationError(collection) {
       throw A.wrapException(A.ConcurrentModificationError$(collection));
+    },
+    TypeErrorDecoder_extractPattern(message) {
+      var match, $arguments, argumentsExpr, expr, method, receiver;
+      message = A.quoteStringForRegExp(message.replace(String({}), "$receiver$"));
+      match = message.match(/\\\$[a-zA-Z]+\\\$/g);
+      if (match == null)
+        match = A._setArrayType([], type$.JSArray_String);
+      $arguments = match.indexOf("\\$arguments\\$");
+      argumentsExpr = match.indexOf("\\$argumentsExpr\\$");
+      expr = match.indexOf("\\$expr\\$");
+      method = match.indexOf("\\$method\\$");
+      receiver = match.indexOf("\\$receiver\\$");
+      return new A.TypeErrorDecoder(message.replace(new RegExp("\\\\\\$arguments\\\\\\$", "g"), "((?:x|[^x])*)").replace(new RegExp("\\\\\\$argumentsExpr\\\\\\$", "g"), "((?:x|[^x])*)").replace(new RegExp("\\\\\\$expr\\\\\\$", "g"), "((?:x|[^x])*)").replace(new RegExp("\\\\\\$method\\\\\\$", "g"), "((?:x|[^x])*)").replace(new RegExp("\\\\\\$receiver\\\\\\$", "g"), "((?:x|[^x])*)"), $arguments, argumentsExpr, expr, method, receiver);
+    },
+    TypeErrorDecoder_provokeCallErrorOn(expression) {
+      return function($expr$) {
+        var $argumentsExpr$ = "$arguments$";
+        try {
+          $expr$.$method$($argumentsExpr$);
+        } catch (e) {
+          return e.message;
+        }
+      }(expression);
+    },
+    TypeErrorDecoder_provokePropertyErrorOn(expression) {
+      return function($expr$) {
+        try {
+          $expr$.$method$;
+        } catch (e) {
+          return e.message;
+        }
+      }(expression);
+    },
+    JsNoSuchMethodError$(_message, match) {
+      var t1 = match == null,
+        t2 = t1 ? null : match.method;
+      return new A.JsNoSuchMethodError(_message, t2, t1 ? null : match.receiver);
+    },
+    unwrapException(ex) {
+      if (ex == null)
+        return new A.NullThrownFromJavaScriptException(ex);
+      if (typeof ex !== "object")
+        return ex;
+      if ("dartException" in ex)
+        return A.saveStackTrace(ex, ex.dartException);
+      return A._unwrapNonDartException(ex);
+    },
+    saveStackTrace(ex, error) {
+      if (type$.Error._is(error))
+        if (error.$thrownJsError == null)
+          error.$thrownJsError = ex;
+      return error;
+    },
+    _unwrapNonDartException(ex) {
+      var message, number, ieErrorCode, t1, nsme, notClosure, nullCall, nullLiteralCall, undefCall, undefLiteralCall, nullProperty, undefProperty, undefLiteralProperty, match, _null = null;
+      if (!("message" in ex))
+        return ex;
+      message = ex.message;
+      if ("number" in ex && typeof ex.number == "number") {
+        number = ex.number;
+        ieErrorCode = number & 65535;
+        if ((B.JSInt_methods._shrOtherPositive$1(number, 16) & 8191) === 10)
+          switch (ieErrorCode) {
+            case 438:
+              return A.saveStackTrace(ex, A.JsNoSuchMethodError$(A.S(message) + " (Error " + ieErrorCode + ")", _null));
+            case 445:
+            case 5007:
+              t1 = A.S(message);
+              return A.saveStackTrace(ex, new A.NullError(t1 + " (Error " + ieErrorCode + ")", _null));
+          }
+      }
+      if (ex instanceof TypeError) {
+        nsme = $.$get$TypeErrorDecoder_noSuchMethodPattern();
+        notClosure = $.$get$TypeErrorDecoder_notClosurePattern();
+        nullCall = $.$get$TypeErrorDecoder_nullCallPattern();
+        nullLiteralCall = $.$get$TypeErrorDecoder_nullLiteralCallPattern();
+        undefCall = $.$get$TypeErrorDecoder_undefinedCallPattern();
+        undefLiteralCall = $.$get$TypeErrorDecoder_undefinedLiteralCallPattern();
+        nullProperty = $.$get$TypeErrorDecoder_nullPropertyPattern();
+        $.$get$TypeErrorDecoder_nullLiteralPropertyPattern();
+        undefProperty = $.$get$TypeErrorDecoder_undefinedPropertyPattern();
+        undefLiteralProperty = $.$get$TypeErrorDecoder_undefinedLiteralPropertyPattern();
+        match = nsme.matchTypeError$1(message);
+        if (match != null)
+          return A.saveStackTrace(ex, A.JsNoSuchMethodError$(A._asString(message), match));
+        else {
+          match = notClosure.matchTypeError$1(message);
+          if (match != null) {
+            match.method = "call";
+            return A.saveStackTrace(ex, A.JsNoSuchMethodError$(A._asString(message), match));
+          } else {
+            match = nullCall.matchTypeError$1(message);
+            if (match == null) {
+              match = nullLiteralCall.matchTypeError$1(message);
+              if (match == null) {
+                match = undefCall.matchTypeError$1(message);
+                if (match == null) {
+                  match = undefLiteralCall.matchTypeError$1(message);
+                  if (match == null) {
+                    match = nullProperty.matchTypeError$1(message);
+                    if (match == null) {
+                      match = nullLiteralCall.matchTypeError$1(message);
+                      if (match == null) {
+                        match = undefProperty.matchTypeError$1(message);
+                        if (match == null) {
+                          match = undefLiteralProperty.matchTypeError$1(message);
+                          t1 = match != null;
+                        } else
+                          t1 = true;
+                      } else
+                        t1 = true;
+                    } else
+                      t1 = true;
+                  } else
+                    t1 = true;
+                } else
+                  t1 = true;
+              } else
+                t1 = true;
+            } else
+              t1 = true;
+            if (t1) {
+              A._asString(message);
+              return A.saveStackTrace(ex, new A.NullError(message, match == null ? _null : match.method));
+            }
+          }
+        }
+        return A.saveStackTrace(ex, new A.UnknownJsTypeError(typeof message == "string" ? message : ""));
+      }
+      if (ex instanceof RangeError) {
+        if (typeof message == "string" && message.indexOf("call stack") !== -1)
+          return new A.StackOverflowError();
+        message = function(ex) {
+          try {
+            return String(ex);
+          } catch (e) {
+          }
+          return null;
+        }(ex);
+        return A.saveStackTrace(ex, new A.ArgumentError(false, _null, _null, typeof message == "string" ? message.replace(/^RangeError:\s*/, "") : message));
+      }
+      if (typeof InternalError == "function" && ex instanceof InternalError)
+        if (typeof message == "string" && message === "too much recursion")
+          return new A.StackOverflowError();
+      return ex;
+    },
+    getTraceFromException(exception) {
+      var trace;
+      if (exception == null)
+        return new A._StackTrace(exception);
+      trace = exception.$cachedTrace;
+      if (trace != null)
+        return trace;
+      return exception.$cachedTrace = new A._StackTrace(exception);
+    },
+    invokeClosure(closure, numberOfArguments, arg1, arg2, arg3, arg4) {
+      type$.Function._as(closure);
+      switch (A._asInt(numberOfArguments)) {
+        case 0:
+          return closure.call$0();
+        case 1:
+          return closure.call$1(arg1);
+        case 2:
+          return closure.call$2(arg1, arg2);
+        case 3:
+          return closure.call$3(arg1, arg2, arg3);
+        case 4:
+          return closure.call$4(arg1, arg2, arg3, arg4);
+      }
+      throw A.wrapException(new A._Exception("Unsupported number of arguments for wrapped closure"));
+    },
+    convertDartClosureToJS(closure, arity) {
+      var $function;
+      if (closure == null)
+        return null;
+      $function = closure.$identity;
+      if (!!$function)
+        return $function;
+      $function = function(closure, arity, invoke) {
+        return function(a1, a2, a3, a4) {
+          return invoke(closure, arity, a1, a2, a3, a4);
+        };
+      }(closure, arity, A.invokeClosure);
+      closure.$identity = $function;
+      return $function;
     },
     Closure_fromTearOff(parameters) {
       var $prototype, $constructor, t2, trampoline, applyTrampoline, i, stub, stub0, stubName, stubCallName,
@@ -535,7 +723,7 @@
         if (template[$name] === fieldName)
           return $name;
       }
-      throw A.wrapException(A.ArgumentError$("Field name " + fieldName + " not found."));
+      throw A.wrapException(A.ArgumentError$("Field name " + fieldName + " not found.", null));
     },
     throwCyclicInit(staticName) {
       throw A.wrapException(new A.CyclicInitializationError(staticName));
@@ -683,6 +871,39 @@
     },
     applyHooksTransformer(transformer, hooks) {
       return transformer(hooks) || hooks;
+    },
+    quoteStringForRegExp(string) {
+      if (/[[\]{}()*+?.\\^$|]/.test(string))
+        return string.replace(/[[\]{}()*+?.\\^$|]/g, "\\$&");
+      return string;
+    },
+    TypeErrorDecoder: function TypeErrorDecoder(t0, t1, t2, t3, t4, t5) {
+      var _ = this;
+      _._pattern = t0;
+      _._arguments = t1;
+      _._argumentsExpr = t2;
+      _._expr = t3;
+      _._method = t4;
+      _._receiver = t5;
+    },
+    NullError: function NullError(t0, t1) {
+      this.__js_helper$_message = t0;
+      this._method = t1;
+    },
+    JsNoSuchMethodError: function JsNoSuchMethodError(t0, t1, t2) {
+      this.__js_helper$_message = t0;
+      this._method = t1;
+      this._receiver = t2;
+    },
+    UnknownJsTypeError: function UnknownJsTypeError(t0) {
+      this.__js_helper$_message = t0;
+    },
+    NullThrownFromJavaScriptException: function NullThrownFromJavaScriptException(t0) {
+      this._irritant = t0;
+    },
+    _StackTrace: function _StackTrace(t0) {
+      this._exception = t0;
+      this._trace = null;
     },
     Closure: function Closure() {
     },
@@ -2145,10 +2366,385 @@
     _TypeError: function _TypeError(t0) {
       this.__rti$_message = t0;
     },
+    _AsyncRun__initializeScheduleImmediate() {
+      var div, span, t1 = {};
+      if (self.scheduleImmediate != null)
+        return A.async__AsyncRun__scheduleImmediateJsOverride$closure();
+      if (self.MutationObserver != null && self.document != null) {
+        div = self.document.createElement("div");
+        span = self.document.createElement("span");
+        t1.storedCallback = null;
+        new self.MutationObserver(A.convertDartClosureToJS(new A._AsyncRun__initializeScheduleImmediate_internalCallback(t1), 1)).observe(div, {childList: true});
+        return new A._AsyncRun__initializeScheduleImmediate_closure(t1, div, span);
+      } else if (self.setImmediate != null)
+        return A.async__AsyncRun__scheduleImmediateWithSetImmediate$closure();
+      return A.async__AsyncRun__scheduleImmediateWithTimer$closure();
+    },
+    _AsyncRun__scheduleImmediateJsOverride(callback) {
+      self.scheduleImmediate(A.convertDartClosureToJS(new A._AsyncRun__scheduleImmediateJsOverride_internalCallback(type$.void_Function._as(callback)), 0));
+    },
+    _AsyncRun__scheduleImmediateWithSetImmediate(callback) {
+      self.setImmediate(A.convertDartClosureToJS(new A._AsyncRun__scheduleImmediateWithSetImmediate_internalCallback(type$.void_Function._as(callback)), 0));
+    },
+    _AsyncRun__scheduleImmediateWithTimer(callback) {
+      type$.void_Function._as(callback);
+      A._TimerImpl$(0, callback);
+    },
+    _TimerImpl$(milliseconds, callback) {
+      var t1 = new A._TimerImpl();
+      t1._TimerImpl$2(milliseconds, callback);
+      return t1;
+    },
+    AsyncError$(error, stackTrace) {
+      var t1 = A.checkNotNullable(error, "error", type$.Object);
+      return new A.AsyncError(t1, stackTrace == null ? A.AsyncError_defaultStackTrace(error) : stackTrace);
+    },
+    AsyncError_defaultStackTrace(error) {
+      var stackTrace;
+      if (type$.Error._is(error)) {
+        stackTrace = error.get$stackTrace();
+        if (stackTrace != null)
+          return stackTrace;
+      }
+      return B.C__StringStackTrace;
+    },
+    _Future__chainCoreFuture(source, target) {
+      var t1, t2, listeners;
+      for (t1 = type$._Future_dynamic; t2 = source._state, (t2 & 4) !== 0;)
+        source = t1._as(source._resultOrListeners);
+      if ((t2 & 24) !== 0) {
+        listeners = target._removeListeners$0();
+        target._cloneResult$1(source);
+        A._Future__propagateToListeners(target, listeners);
+      } else {
+        listeners = type$.nullable__FutureListener_dynamic_dynamic._as(target._resultOrListeners);
+        target._state = target._state & 1 | 4;
+        target._resultOrListeners = source;
+        source._prependListeners$1(listeners);
+      }
+    },
+    _Future__propagateToListeners(source, listeners) {
+      var t2, t3, t4, _box_0, t5, t6, hasError, asyncError, nextListener, nextListener0, sourceResult, t7, zone, oldZone, result, current, _box_1 = {},
+        t1 = _box_1.source = source;
+      for (t2 = type$.AsyncError, t3 = type$.nullable__FutureListener_dynamic_dynamic, t4 = type$.Future_dynamic; true;) {
+        _box_0 = {};
+        t5 = t1._state;
+        t6 = (t5 & 16) === 0;
+        hasError = !t6;
+        if (listeners == null) {
+          if (hasError && (t5 & 1) === 0) {
+            asyncError = t2._as(t1._resultOrListeners);
+            A._rootHandleError(asyncError.error, asyncError.stackTrace);
+          }
+          return;
+        }
+        _box_0.listener = listeners;
+        nextListener = listeners._nextListener;
+        for (t1 = listeners; nextListener != null; t1 = nextListener, nextListener = nextListener0) {
+          t1._nextListener = null;
+          A._Future__propagateToListeners(_box_1.source, t1);
+          _box_0.listener = nextListener;
+          nextListener0 = nextListener._nextListener;
+        }
+        t5 = _box_1.source;
+        sourceResult = t5._resultOrListeners;
+        _box_0.listenerHasError = hasError;
+        _box_0.listenerValueOrError = sourceResult;
+        if (t6) {
+          t7 = t1.state;
+          t7 = (t7 & 1) !== 0 || (t7 & 15) === 8;
+        } else
+          t7 = true;
+        if (t7) {
+          zone = t1.result._zone;
+          if (hasError) {
+            t5 = t5._zone === zone;
+            t5 = !(t5 || t5);
+          } else
+            t5 = false;
+          if (t5) {
+            t2._as(sourceResult);
+            A._rootHandleError(sourceResult.error, sourceResult.stackTrace);
+            return;
+          }
+          oldZone = $.Zone__current;
+          if (oldZone !== zone)
+            $.Zone__current = zone;
+          else
+            oldZone = null;
+          t1 = t1.state;
+          if ((t1 & 15) === 8)
+            new A._Future__propagateToListeners_handleWhenCompleteCallback(_box_0, _box_1, hasError).call$0();
+          else if (t6) {
+            if ((t1 & 1) !== 0)
+              new A._Future__propagateToListeners_handleValueCallback(_box_0, sourceResult).call$0();
+          } else if ((t1 & 2) !== 0)
+            new A._Future__propagateToListeners_handleError(_box_1, _box_0).call$0();
+          if (oldZone != null)
+            $.Zone__current = oldZone;
+          t1 = _box_0.listenerValueOrError;
+          if (t4._is(t1)) {
+            t5 = _box_0.listener.$ti;
+            t5 = t5._eval$1("Future<2>")._is(t1) || !t5._rest[1]._is(t1);
+          } else
+            t5 = false;
+          if (t5) {
+            t4._as(t1);
+            result = _box_0.listener.result;
+            if ((t1._state & 24) !== 0) {
+              current = t3._as(result._resultOrListeners);
+              result._resultOrListeners = null;
+              listeners = result._reverseListeners$1(current);
+              result._state = t1._state & 30 | result._state & 1;
+              result._resultOrListeners = t1._resultOrListeners;
+              _box_1.source = t1;
+              continue;
+            } else
+              A._Future__chainCoreFuture(t1, result);
+            return;
+          }
+        }
+        result = _box_0.listener.result;
+        current = t3._as(result._resultOrListeners);
+        result._resultOrListeners = null;
+        listeners = result._reverseListeners$1(current);
+        t1 = _box_0.listenerHasError;
+        t5 = _box_0.listenerValueOrError;
+        if (!t1) {
+          result.$ti._precomputed1._as(t5);
+          result._state = 8;
+          result._resultOrListeners = t5;
+        } else {
+          t2._as(t5);
+          result._state = result._state & 1 | 16;
+          result._resultOrListeners = t5;
+        }
+        _box_1.source = result;
+        t1 = result;
+      }
+    },
+    _registerErrorHandler(errorHandler, zone) {
+      var t1 = type$.dynamic_Function_Object_StackTrace;
+      if (t1._is(errorHandler))
+        return t1._as(errorHandler);
+      t1 = type$.dynamic_Function_Object;
+      if (t1._is(errorHandler))
+        return t1._as(errorHandler);
+      throw A.wrapException(A.ArgumentError$value(errorHandler, "onError", string$.Error_));
+    },
+    _microtaskLoop() {
+      var entry, next;
+      for (entry = $._nextCallback; entry != null; entry = $._nextCallback) {
+        $._lastPriorityCallback = null;
+        next = entry.next;
+        $._nextCallback = next;
+        if (next == null)
+          $._lastCallback = null;
+        entry.callback.call$0();
+      }
+    },
+    _startMicrotaskLoop() {
+      $._isInCallbackLoop = true;
+      try {
+        A._microtaskLoop();
+      } finally {
+        $._lastPriorityCallback = null;
+        $._isInCallbackLoop = false;
+        if ($._nextCallback != null)
+          $.$get$_AsyncRun__scheduleImmediateClosure().call$1(A.async___startMicrotaskLoop$closure());
+      }
+    },
+    _scheduleAsyncCallback(callback) {
+      var newEntry = new A._AsyncCallbackEntry(callback),
+        lastCallback = $._lastCallback;
+      if (lastCallback == null) {
+        $._nextCallback = $._lastCallback = newEntry;
+        if (!$._isInCallbackLoop)
+          $.$get$_AsyncRun__scheduleImmediateClosure().call$1(A.async___startMicrotaskLoop$closure());
+      } else
+        $._lastCallback = lastCallback.next = newEntry;
+    },
+    _schedulePriorityAsyncCallback(callback) {
+      var entry, lastPriorityCallback, next,
+        t1 = $._nextCallback;
+      if (t1 == null) {
+        A._scheduleAsyncCallback(callback);
+        $._lastPriorityCallback = $._lastCallback;
+        return;
+      }
+      entry = new A._AsyncCallbackEntry(callback);
+      lastPriorityCallback = $._lastPriorityCallback;
+      if (lastPriorityCallback == null) {
+        entry.next = t1;
+        $._nextCallback = $._lastPriorityCallback = entry;
+      } else {
+        next = lastPriorityCallback.next;
+        entry.next = next;
+        $._lastPriorityCallback = lastPriorityCallback.next = entry;
+        if (next == null)
+          $._lastCallback = entry;
+      }
+    },
+    _rootHandleError(error, stackTrace) {
+      A._schedulePriorityAsyncCallback(new A._rootHandleError_closure(error, stackTrace));
+    },
+    _rootRun($self, $parent, zone, f, $R) {
+      var old,
+        t1 = $.Zone__current;
+      if (t1 === zone)
+        return f.call$0();
+      $.Zone__current = zone;
+      old = t1;
+      try {
+        t1 = f.call$0();
+        return t1;
+      } finally {
+        $.Zone__current = old;
+      }
+    },
+    _rootRunUnary($self, $parent, zone, f, arg, $R, $T) {
+      var old,
+        t1 = $.Zone__current;
+      if (t1 === zone)
+        return f.call$1(arg);
+      $.Zone__current = zone;
+      old = t1;
+      try {
+        t1 = f.call$1(arg);
+        return t1;
+      } finally {
+        $.Zone__current = old;
+      }
+    },
+    _rootRunBinary($self, $parent, zone, f, arg1, arg2, $R, T1, T2) {
+      var old,
+        t1 = $.Zone__current;
+      if (t1 === zone)
+        return f.call$2(arg1, arg2);
+      $.Zone__current = zone;
+      old = t1;
+      try {
+        t1 = f.call$2(arg1, arg2);
+        return t1;
+      } finally {
+        $.Zone__current = old;
+      }
+    },
+    _rootScheduleMicrotask($self, $parent, zone, f) {
+      type$.void_Function._as(f);
+      if (B.C__RootZone !== zone)
+        f = zone.bindCallbackGuarded$1(f);
+      A._scheduleAsyncCallback(f);
+    },
+    _AsyncRun__initializeScheduleImmediate_internalCallback: function _AsyncRun__initializeScheduleImmediate_internalCallback(t0) {
+      this._box_0 = t0;
+    },
+    _AsyncRun__initializeScheduleImmediate_closure: function _AsyncRun__initializeScheduleImmediate_closure(t0, t1, t2) {
+      this._box_0 = t0;
+      this.div = t1;
+      this.span = t2;
+    },
+    _AsyncRun__scheduleImmediateJsOverride_internalCallback: function _AsyncRun__scheduleImmediateJsOverride_internalCallback(t0) {
+      this.callback = t0;
+    },
+    _AsyncRun__scheduleImmediateWithSetImmediate_internalCallback: function _AsyncRun__scheduleImmediateWithSetImmediate_internalCallback(t0) {
+      this.callback = t0;
+    },
+    _TimerImpl: function _TimerImpl() {
+    },
+    _TimerImpl_internalCallback: function _TimerImpl_internalCallback(t0, t1) {
+      this.$this = t0;
+      this.callback = t1;
+    },
+    AsyncError: function AsyncError(t0, t1) {
+      this.error = t0;
+      this.stackTrace = t1;
+    },
+    _FutureListener: function _FutureListener(t0, t1, t2, t3, t4) {
+      var _ = this;
+      _._nextListener = null;
+      _.result = t0;
+      _.state = t1;
+      _.callback = t2;
+      _.errorCallback = t3;
+      _.$ti = t4;
+    },
+    _Future: function _Future(t0, t1) {
+      var _ = this;
+      _._state = 0;
+      _._zone = t0;
+      _._resultOrListeners = null;
+      _.$ti = t1;
+    },
+    _Future__addListener_closure: function _Future__addListener_closure(t0, t1) {
+      this.$this = t0;
+      this.listener = t1;
+    },
+    _Future__prependListeners_closure: function _Future__prependListeners_closure(t0, t1) {
+      this._box_0 = t0;
+      this.$this = t1;
+    },
+    _Future__propagateToListeners_handleWhenCompleteCallback: function _Future__propagateToListeners_handleWhenCompleteCallback(t0, t1, t2) {
+      this._box_0 = t0;
+      this._box_1 = t1;
+      this.hasError = t2;
+    },
+    _Future__propagateToListeners_handleWhenCompleteCallback_closure: function _Future__propagateToListeners_handleWhenCompleteCallback_closure(t0) {
+      this.originalSource = t0;
+    },
+    _Future__propagateToListeners_handleValueCallback: function _Future__propagateToListeners_handleValueCallback(t0, t1) {
+      this._box_0 = t0;
+      this.sourceResult = t1;
+    },
+    _Future__propagateToListeners_handleError: function _Future__propagateToListeners_handleError(t0, t1) {
+      this._box_1 = t0;
+      this._box_0 = t1;
+    },
+    _AsyncCallbackEntry: function _AsyncCallbackEntry(t0) {
+      this.callback = t0;
+      this.next = null;
+    },
+    Stream: function Stream() {
+    },
+    Stream_length_closure: function Stream_length_closure(t0, t1) {
+      this._box_0 = t0;
+      this.$this = t1;
+    },
+    Stream_length_closure0: function Stream_length_closure0(t0, t1) {
+      this._box_0 = t0;
+      this.future = t1;
+    },
+    StreamSubscription: function StreamSubscription() {
+    },
+    _Zone: function _Zone() {
+    },
+    _rootHandleError_closure: function _rootHandleError_closure(t0, t1) {
+      this.error = t0;
+      this.stackTrace = t1;
+    },
+    _RootZone: function _RootZone() {
+    },
+    _RootZone_bindCallbackGuarded_closure: function _RootZone_bindCallbackGuarded_closure(t0, t1) {
+      this.$this = t0;
+      this.f = t1;
+    },
+    _RootZone_bindUnaryCallbackGuarded_closure: function _RootZone_bindUnaryCallbackGuarded_closure(t0, t1, t2) {
+      this.$this = t0;
+      this.f = t1;
+      this.T = t2;
+    },
     Error__objectToString(object) {
       if (object instanceof A.Closure)
         return object.toString$0(0);
       return "Instance of '" + A.Primitives_objectTypeName(object) + "'";
+    },
+    Error__throw(error, stackTrace) {
+      error = A.wrapException(error);
+      if (error == null)
+        error = type$.Object._as(error);
+      error.stack = stackTrace.toString$0(0);
+      throw error;
+      throw A.wrapException("unreachable");
     },
     StringBuffer__writeAll(string, objects, separator) {
       var t2,
@@ -2182,8 +2778,11 @@
     AssertionError$(message) {
       return new A.AssertionError(message);
     },
-    ArgumentError$(message) {
-      return new A.ArgumentError(false, null, null, message);
+    ArgumentError$(message, $name) {
+      return new A.ArgumentError(false, null, $name, message);
+    },
+    ArgumentError$value(value, $name, message) {
+      return new A.ArgumentError(true, value, $name, message);
     },
     UnsupportedError$(message) {
       return new A.UnsupportedError(message);
@@ -2201,6 +2800,8 @@
     },
     AssertionError: function AssertionError(t0) {
       this.message = t0;
+    },
+    TypeError: function TypeError() {
     },
     NullThrownError: function NullThrownError() {
     },
@@ -2239,18 +2840,55 @@
     },
     OutOfMemoryError: function OutOfMemoryError() {
     },
+    StackOverflowError: function StackOverflowError() {
+    },
     CyclicInitializationError: function CyclicInitializationError(t0) {
       this.variableName = t0;
+    },
+    _Exception: function _Exception(t0) {
+      this.message = t0;
     },
     Null: function Null() {
     },
     Object: function Object() {
+    },
+    _StringStackTrace: function _StringStackTrace() {
     },
     StringBuffer: function StringBuffer(t0) {
       this._contents = t0;
     },
     document() {
       return document;
+    },
+    _EventStreamSubscription$(_target, _eventType, onData, _useCapture, $T) {
+      var t1 = A._wrapZone(new A._EventStreamSubscription_closure(onData), type$.Event),
+        t2 = t1 != null;
+      if (t2 && true) {
+        type$.nullable_dynamic_Function_Event._as(t1);
+        if (t2)
+          J._addEventListener$3$x(_target, _eventType, t1, false);
+      }
+      return new A._EventStreamSubscription(_target, _eventType, t1, false, $T._eval$1("_EventStreamSubscription<0>"));
+    },
+    _convertNativeToDart_EventTarget(e) {
+      var $window;
+      if ("postMessage" in e) {
+        $window = A._DOMWindowCrossFrame__createSafe(e);
+        return $window;
+      } else
+        return type$.nullable_EventTarget._as(e);
+    },
+    _DOMWindowCrossFrame__createSafe(w) {
+      if (w === window)
+        return type$.WindowBase._as(w);
+      else
+        return new A._DOMWindowCrossFrame();
+    },
+    _wrapZone(callback, $T) {
+      var t1 = $.Zone__current;
+      if (t1 === B.C__RootZone)
+        return callback;
+      return t1.bindUnaryCallbackGuarded$1$1(callback, $T);
     },
     HtmlElement: function HtmlElement() {
     },
@@ -2262,9 +2900,15 @@
     },
     CanvasRenderingContext2D: function CanvasRenderingContext2D() {
     },
+    CharacterData: function CharacterData() {
+    },
     DomException: function DomException() {
     },
+    DomRectReadOnly: function DomRectReadOnly() {
+    },
     Element: function Element() {
+    },
+    Event: function Event() {
     },
     EventTarget: function EventTarget() {
     },
@@ -2272,9 +2916,47 @@
     },
     ImageElement: function ImageElement() {
     },
+    MouseEvent: function MouseEvent() {
+    },
     Node: function Node() {
     },
     SelectElement: function SelectElement() {
+    },
+    UIEvent: function UIEvent() {
+    },
+    Window: function Window() {
+    },
+    _DomRect: function _DomRect() {
+    },
+    EventStreamProvider: function EventStreamProvider(t0) {
+      this.$ti = t0;
+    },
+    _EventStream: function _EventStream() {
+    },
+    _ElementEventStreamImpl: function _ElementEventStreamImpl(t0, t1, t2, t3) {
+      var _ = this;
+      _._target = t0;
+      _._eventType = t1;
+      _._useCapture = t2;
+      _.$ti = t3;
+    },
+    _EventStreamSubscription: function _EventStreamSubscription(t0, t1, t2, t3, t4) {
+      var _ = this;
+      _._target = t0;
+      _._eventType = t1;
+      _._onData = t2;
+      _._useCapture = t3;
+      _.$ti = t4;
+    },
+    _EventStreamSubscription_closure: function _EventStreamSubscription_closure(t0) {
+      this.onData = t0;
+    },
+    _DOMWindowCrossFrame: function _DOMWindowCrossFrame() {
+    },
+    Point: function Point(t0, t1, t2) {
+      this.x = t0;
+      this.y = t1;
+      this.$ti = t2;
     },
     UpdateTileBitmaskCommand: function UpdateTileBitmaskCommand(t0, t1) {
       this.grid = t0;
@@ -2302,16 +2984,6 @@
     },
     Command: function Command() {
     },
-    DrawCommand$(grid, tile, coordinates) {
-      return new A.DrawCommand(grid, tile, coordinates);
-    },
-    DrawCommand: function DrawCommand(t0, t1, t2) {
-      var _ = this;
-      _.grid = t0;
-      _.tile = t1;
-      _.coordinates = t2;
-      _.__DrawCommand_updateTileBitmasksCommand_A = _.__DrawCommand_setTileCommand_A = $;
-    },
     TileGrid$(height, width, fillValue) {
       var t1 = new A.TileGrid(height, width);
       t1.Grid$3$fillValue(height, width, new A.TileGrid_closure(), type$.Tile);
@@ -2326,17 +2998,58 @@
     },
     TileGrid_closure: function TileGrid_closure() {
     },
+    main() {
+      var t2, t3,
+        t1 = type$.CanvasElement._as(document.querySelector("#canvas"));
+      $.canvas = t1;
+      $.ctx = type$.CanvasRenderingContext2D._as(B.CanvasElement_methods.getContext$1(t1, "2d"));
+      t1 = $.$get$tilemapImage();
+      (t1 && B.ImageElement_methods).set$src(t1, "dungeon_tilemap.png");
+      A.clear();
+      A.drawGrid();
+      t1 = $.canvas;
+      if (t1 != null) {
+        t2 = type$._ElementEventStreamImpl_MouseEvent;
+        t3 = t2._eval$1("~(1)?")._as(new A.main_closure());
+        type$.nullable_void_Function._as(null);
+        A._EventStreamSubscription$(t1, "mousedown", t3, false, t2._precomputed1);
+      }
+    },
+    clear() {
+      var t2, t3,
+        t1 = $.ctx;
+      t1.toString;
+      B.CanvasRenderingContext2D_methods.set$fillStyle(t1, "black");
+      t2 = $.canvas;
+      t3 = t2.width;
+      if (t3 == null)
+        t3 = A._asInt(t3);
+      t2 = t2.height;
+      t1.fillRect(0, 0, t3, t2 == null ? A._asInt(t2) : t2);
+    },
+    drawGrid() {
+      var y, x, t1, bitmask, sourceX;
+      for (y = 0; y < $.$get$tileGrid().height; ++y)
+        for (x = 0; t1 = $.$get$tileGrid(), x < t1.width; ++x) {
+          t1 = t1.__Grid__grid_A;
+          t1 === $ && A.throwLateFieldNI("_grid");
+          if (!(y < t1.length))
+            return A.ioore(t1, y);
+          t1 = t1[y];
+          if (!(x < t1.length))
+            return A.ioore(t1, x);
+          bitmask = t1[x].bitmask;
+          sourceX = B.JSInt_methods.$mod(bitmask, 10);
+          t1 = $.ctx;
+          t1.toString;
+          t1.drawImage($.$get$tilemapImage(), sourceX * 16, (bitmask / 10 | 0) * 16, 16, 16, x * 16, y * 16, 16, 16);
+        }
+    },
+    main_closure: function main_closure() {
+    },
     Position: function Position(t0, t1) {
       this.x = t0;
       this.y = t1;
-    },
-    SetTileCommand: function SetTileCommand(t0, t1, t2) {
-      this.grid = t0;
-      this.tile = t1;
-      this.coordinates = t2;
-    },
-    GroundTile$() {
-      return new A.GroundTile("Ground Tile", "Tile");
     },
     HoleTile$() {
       var t1 = new A.HoleTile("Hole Tile", "Tile");
@@ -2407,52 +3120,6 @@
         if (o === $._toStringVisiting[i])
           return true;
       return false;
-    },
-    main() {
-      var t2, t3,
-        t1 = type$.CanvasElement._as(document.querySelector("#canvas"));
-      $.canvas = t1;
-      $.ctx = type$.CanvasRenderingContext2D._as(B.CanvasElement_methods.getContext$1(t1, "2d"));
-      t1 = $.$get$tilemapImage();
-      (t1 && B.ImageElement_methods).set$src(t1, "dungeon_tilemap.png");
-      A.DrawCommand$($.$get$tileGrid(), A.GroundTile$(), new A.Position(0, 0)).execute$0();
-      A.DrawCommand$($.$get$tileGrid(), A.GroundTile$(), new A.Position(0, 1)).execute$0();
-      A.DrawCommand$($.$get$tileGrid(), A.GroundTile$(), new A.Position(1, 0)).execute$0();
-      A.DrawCommand$($.$get$tileGrid(), A.GroundTile$(), new A.Position(1, 1)).execute$0();
-      A.DrawCommand$($.$get$tileGrid(), A.GroundTile$(), new A.Position(2, 2)).execute$0();
-      A.DrawCommand$($.$get$tileGrid(), A.GroundTile$(), new A.Position(3, 3)).execute$0();
-      A.DrawCommand$($.$get$tileGrid(), A.GroundTile$(), new A.Position(4, 3)).execute$0();
-      t1 = $.ctx;
-      t1.toString;
-      B.CanvasRenderingContext2D_methods.set$fillStyle(t1, "black");
-      t2 = $.canvas;
-      t3 = t2.width;
-      if (t3 == null)
-        t3 = A._asInt(t3);
-      t2 = t2.height;
-      t1.fillRect(0, 0, t3, t2 == null ? A._asInt(t2) : t2);
-      A.drawGrid();
-      A.print($.$get$tileGrid());
-    },
-    drawGrid() {
-      var y, x, t1, bitmask, sourceY, sourceX;
-      for (y = 0; y < $.$get$tileGrid().height; ++y)
-        for (x = 0; t1 = $.$get$tileGrid(), x < t1.width; ++x) {
-          t1 = t1.__Grid__grid_A;
-          t1 === $ && A.throwLateFieldNI("_grid");
-          if (!(y < t1.length))
-            return A.ioore(t1, y);
-          t1 = t1[y];
-          if (!(x < t1.length))
-            return A.ioore(t1, x);
-          bitmask = t1[x].bitmask;
-          sourceY = bitmask / 10 | 0;
-          sourceX = B.JSInt_methods.$mod(bitmask, 10);
-          A.printString(new A.Position(sourceX, sourceY).toString$0(0) + " for " + bitmask);
-          t1 = $.ctx;
-          t1.toString;
-          t1.drawImage($.$get$tilemapImage(), sourceX * 16, sourceY * 16, 16, 16, x * 16, y * 16, 16, 16);
-        }
     }
   },
   J = {
@@ -2551,8 +3218,23 @@
         return receiver;
       return J.getNativeInterceptor(receiver);
     },
+    getInterceptor$x(receiver) {
+      if (receiver == null)
+        return receiver;
+      if (typeof receiver != "object") {
+        if (typeof receiver == "function")
+          return J.JavaScriptFunction.prototype;
+        return receiver;
+      }
+      if (receiver instanceof A.Object)
+        return receiver;
+      return J.getNativeInterceptor(receiver);
+    },
     get$length$asx(receiver) {
       return J.getInterceptor$asx(receiver).get$length(receiver);
+    },
+    _addEventListener$3$x(receiver, a0, a1, a2) {
+      return J.getInterceptor$x(receiver)._addEventListener$3(receiver, a0, a1, a2);
     },
     toString$0$(receiver) {
       return J.getInterceptor$(receiver).toString$0(receiver);
@@ -2630,7 +3312,8 @@
       if (dartClosure == null)
         return this.super$LegacyJavaScriptObject$toString(receiver);
       return "JavaScript function for " + J.toString$0$(dartClosure);
-    }
+    },
+    $isFunction: 1
   };
   J.JSArray.prototype = {
     add$1(receiver, value) {
@@ -2688,6 +3371,16 @@
     }
   };
   J.JSNumber.prototype = {
+    toInt$0(receiver) {
+      var t1;
+      if (receiver >= -2147483648 && receiver <= 2147483647)
+        return receiver | 0;
+      if (isFinite(receiver)) {
+        t1 = receiver < 0 ? Math.ceil(receiver) : Math.floor(receiver);
+        return t1 + 0;
+      }
+      throw A.wrapException(A.UnsupportedError$("" + receiver + ".toInt()"));
+    },
     toRadixString$1(receiver, radix) {
       var result, match, t1, exponent;
       if (radix < 2 || radix > 36)
@@ -2726,8 +3419,35 @@
         return result;
       return result + other;
     },
+    _tdivFast$1(receiver, other) {
+      return (receiver | 0) === receiver ? receiver / other | 0 : this._tdivSlow$1(receiver, other);
+    },
+    _tdivSlow$1(receiver, other) {
+      var quotient = receiver / other;
+      if (quotient >= -2147483648 && quotient <= 2147483647)
+        return quotient | 0;
+      if (quotient > 0) {
+        if (quotient !== 1 / 0)
+          return Math.floor(quotient);
+      } else if (quotient > -1 / 0)
+        return Math.ceil(quotient);
+      throw A.wrapException(A.UnsupportedError$("Result of truncating division is " + A.S(quotient) + ": " + A.S(receiver) + " ~/ " + other));
+    },
     _shlPositive$1(receiver, other) {
       return other > 31 ? 0 : receiver << other >>> 0;
+    },
+    _shrOtherPositive$1(receiver, other) {
+      var t1;
+      if (receiver > 0)
+        t1 = this._shrBothPositive$1(receiver, other);
+      else {
+        t1 = other > 31 ? 31 : other;
+        t1 = receiver >> t1 >>> 0;
+      }
+      return t1;
+    },
+    _shrBothPositive$1(receiver, other) {
+      return other > 31 ? 0 : receiver >>> other;
     },
     $isnum: 1
   };
@@ -2781,12 +3501,82 @@
       return "LateInitializationError: " + this._message;
     }
   };
+  A.TypeErrorDecoder.prototype = {
+    matchTypeError$1(message) {
+      var result, t1, _this = this,
+        match = new RegExp(_this._pattern).exec(message);
+      if (match == null)
+        return null;
+      result = Object.create(null);
+      t1 = _this._arguments;
+      if (t1 !== -1)
+        result.arguments = match[t1 + 1];
+      t1 = _this._argumentsExpr;
+      if (t1 !== -1)
+        result.argumentsExpr = match[t1 + 1];
+      t1 = _this._expr;
+      if (t1 !== -1)
+        result.expr = match[t1 + 1];
+      t1 = _this._method;
+      if (t1 !== -1)
+        result.method = match[t1 + 1];
+      t1 = _this._receiver;
+      if (t1 !== -1)
+        result.receiver = match[t1 + 1];
+      return result;
+    }
+  };
+  A.NullError.prototype = {
+    toString$0(_) {
+      var t1 = this._method;
+      if (t1 == null)
+        return "NoSuchMethodError: " + this.__js_helper$_message;
+      return "NoSuchMethodError: method not found: '" + t1 + "' on null";
+    }
+  };
+  A.JsNoSuchMethodError.prototype = {
+    toString$0(_) {
+      var t2, _this = this,
+        _s38_ = "NoSuchMethodError: method not found: '",
+        t1 = _this._method;
+      if (t1 == null)
+        return "NoSuchMethodError: " + _this.__js_helper$_message;
+      t2 = _this._receiver;
+      if (t2 == null)
+        return _s38_ + t1 + "' (" + _this.__js_helper$_message + ")";
+      return _s38_ + t1 + "' on '" + t2 + "' (" + _this.__js_helper$_message + ")";
+    }
+  };
+  A.UnknownJsTypeError.prototype = {
+    toString$0(_) {
+      var t1 = this.__js_helper$_message;
+      return t1.length === 0 ? "Error" : "Error: " + t1;
+    }
+  };
+  A.NullThrownFromJavaScriptException.prototype = {
+    toString$0(_) {
+      return "Throw of null ('" + (this._irritant === null ? "null" : "undefined") + "' from JavaScript)";
+    }
+  };
+  A._StackTrace.prototype = {
+    toString$0(_) {
+      var trace,
+        t1 = this._trace;
+      if (t1 != null)
+        return t1;
+      t1 = this._exception;
+      trace = t1 !== null && typeof t1 === "object" ? t1.stack : null;
+      return this._trace = trace == null ? "" : trace;
+    },
+    $isStackTrace: 1
+  };
   A.Closure.prototype = {
     toString$0(_) {
       var $constructor = this.constructor,
         $name = $constructor == null ? null : $constructor.name;
       return "Closure '" + A.unminifyOrTag($name == null ? "unknown" : $name) + "'";
     },
+    $isFunction: 1,
     get$$call() {
       return this;
     },
@@ -2819,19 +3609,19 @@
     call$1(o) {
       return this.getTag(o);
     },
-    $signature: 1
+    $signature: 4
   };
   A.initHooks_closure0.prototype = {
     call$2(o, tag) {
       return this.getUnknownTag(o, tag);
     },
-    $signature: 2
+    $signature: 5
   };
   A.initHooks_closure1.prototype = {
     call$1(tag) {
       return this.prototypeForTag(A._asString(tag));
     },
-    $signature: 3
+    $signature: 6
   };
   A.Rti.prototype = {
     _eval$1(recipe) {
@@ -2847,8 +3637,403 @@
       return this.__rti$_message;
     }
   };
-  A._TypeError.prototype = {};
-  A.Error.prototype = {};
+  A._TypeError.prototype = {$isTypeError: 1};
+  A._AsyncRun__initializeScheduleImmediate_internalCallback.prototype = {
+    call$1(_) {
+      var t1 = this._box_0,
+        f = t1.storedCallback;
+      t1.storedCallback = null;
+      f.call$0();
+    },
+    $signature: 7
+  };
+  A._AsyncRun__initializeScheduleImmediate_closure.prototype = {
+    call$1(callback) {
+      var t1, t2;
+      this._box_0.storedCallback = type$.void_Function._as(callback);
+      t1 = this.div;
+      t2 = this.span;
+      t1.firstChild ? t1.removeChild(t2) : t1.appendChild(t2);
+    },
+    $signature: 8
+  };
+  A._AsyncRun__scheduleImmediateJsOverride_internalCallback.prototype = {
+    call$0() {
+      this.callback.call$0();
+    },
+    $signature: 2
+  };
+  A._AsyncRun__scheduleImmediateWithSetImmediate_internalCallback.prototype = {
+    call$0() {
+      this.callback.call$0();
+    },
+    $signature: 2
+  };
+  A._TimerImpl.prototype = {
+    _TimerImpl$2(milliseconds, callback) {
+      if (self.setTimeout != null)
+        self.setTimeout(A.convertDartClosureToJS(new A._TimerImpl_internalCallback(this, callback), 0), milliseconds);
+      else
+        throw A.wrapException(A.UnsupportedError$("`setTimeout()` not found."));
+    }
+  };
+  A._TimerImpl_internalCallback.prototype = {
+    call$0() {
+      this.callback.call$0();
+    },
+    $signature: 0
+  };
+  A.AsyncError.prototype = {
+    toString$0(_) {
+      return A.S(this.error);
+    },
+    $isError: 1,
+    get$stackTrace() {
+      return this.stackTrace;
+    }
+  };
+  A._FutureListener.prototype = {
+    matchesErrorTest$1(asyncError) {
+      if ((this.state & 15) !== 6)
+        return true;
+      return this.result._zone.runUnary$2$2(type$.bool_Function_Object._as(this.callback), asyncError.error, type$.bool, type$.Object);
+    },
+    handleError$1(asyncError) {
+      var exception, _this = this,
+        errorCallback = _this.errorCallback,
+        result = null,
+        t1 = type$.dynamic,
+        t2 = type$.Object,
+        t3 = asyncError.error,
+        t4 = _this.result._zone;
+      if (type$.dynamic_Function_Object_StackTrace._is(errorCallback))
+        result = t4.runBinary$3$3(errorCallback, t3, asyncError.stackTrace, t1, t2, type$.StackTrace);
+      else
+        result = t4.runUnary$2$2(type$.dynamic_Function_Object._as(errorCallback), t3, t1, t2);
+      try {
+        t1 = _this.$ti._eval$1("2/")._as(result);
+        return t1;
+      } catch (exception) {
+        if (type$.TypeError._is(A.unwrapException(exception))) {
+          if ((_this.state & 1) !== 0)
+            throw A.wrapException(A.ArgumentError$("The error handler of Future.then must return a value of the returned future's type", "onError"));
+          throw A.wrapException(A.ArgumentError$("The error handler of Future.catchError must return a value of the future's type", "onError"));
+        } else
+          throw exception;
+      }
+    }
+  };
+  A._Future.prototype = {
+    then$1$2$onError(f, onError, $R) {
+      var currentZone, result, t2,
+        t1 = this.$ti;
+      t1._bind$1($R)._eval$1("1/(2)")._as(f);
+      currentZone = $.Zone__current;
+      if (currentZone === B.C__RootZone) {
+        if (onError != null && !type$.dynamic_Function_Object_StackTrace._is(onError) && !type$.dynamic_Function_Object._is(onError))
+          throw A.wrapException(A.ArgumentError$value(onError, "onError", string$.Error_));
+      } else {
+        $R._eval$1("@<0/>")._bind$1(t1._precomputed1)._eval$1("1(2)")._as(f);
+        if (onError != null)
+          onError = A._registerErrorHandler(onError, currentZone);
+      }
+      result = new A._Future(currentZone, $R._eval$1("_Future<0>"));
+      t2 = onError == null ? 1 : 3;
+      this._addListener$1(new A._FutureListener(result, t2, f, onError, t1._eval$1("@<1>")._bind$1($R)._eval$1("_FutureListener<1,2>")));
+      return result;
+    },
+    then$1$1(f, $R) {
+      return this.then$1$2$onError(f, null, $R);
+    },
+    _cloneResult$1(source) {
+      this._state = source._state & 30 | this._state & 1;
+      this._resultOrListeners = source._resultOrListeners;
+    },
+    _addListener$1(listener) {
+      var source, _this = this,
+        t1 = _this._state;
+      if (t1 <= 3) {
+        listener._nextListener = type$.nullable__FutureListener_dynamic_dynamic._as(_this._resultOrListeners);
+        _this._resultOrListeners = listener;
+      } else {
+        if ((t1 & 4) !== 0) {
+          source = type$._Future_dynamic._as(_this._resultOrListeners);
+          if ((source._state & 24) === 0) {
+            source._addListener$1(listener);
+            return;
+          }
+          _this._cloneResult$1(source);
+        }
+        A._rootScheduleMicrotask(null, null, _this._zone, type$.void_Function._as(new A._Future__addListener_closure(_this, listener)));
+      }
+    },
+    _prependListeners$1(listeners) {
+      var t1, existingListeners, next, cursor, next0, source, _this = this, _box_0 = {};
+      _box_0.listeners = listeners;
+      if (listeners == null)
+        return;
+      t1 = _this._state;
+      if (t1 <= 3) {
+        existingListeners = type$.nullable__FutureListener_dynamic_dynamic._as(_this._resultOrListeners);
+        _this._resultOrListeners = listeners;
+        if (existingListeners != null) {
+          next = listeners._nextListener;
+          for (cursor = listeners; next != null; cursor = next, next = next0)
+            next0 = next._nextListener;
+          cursor._nextListener = existingListeners;
+        }
+      } else {
+        if ((t1 & 4) !== 0) {
+          source = type$._Future_dynamic._as(_this._resultOrListeners);
+          if ((source._state & 24) === 0) {
+            source._prependListeners$1(listeners);
+            return;
+          }
+          _this._cloneResult$1(source);
+        }
+        _box_0.listeners = _this._reverseListeners$1(listeners);
+        A._rootScheduleMicrotask(null, null, _this._zone, type$.void_Function._as(new A._Future__prependListeners_closure(_box_0, _this)));
+      }
+    },
+    _removeListeners$0() {
+      var current = type$.nullable__FutureListener_dynamic_dynamic._as(this._resultOrListeners);
+      this._resultOrListeners = null;
+      return this._reverseListeners$1(current);
+    },
+    _reverseListeners$1(listeners) {
+      var current, prev, next;
+      for (current = listeners, prev = null; current != null; prev = current, current = next) {
+        next = current._nextListener;
+        current._nextListener = prev;
+      }
+      return prev;
+    },
+    $isFuture: 1
+  };
+  A._Future__addListener_closure.prototype = {
+    call$0() {
+      A._Future__propagateToListeners(this.$this, this.listener);
+    },
+    $signature: 0
+  };
+  A._Future__prependListeners_closure.prototype = {
+    call$0() {
+      A._Future__propagateToListeners(this.$this, this._box_0.listeners);
+    },
+    $signature: 0
+  };
+  A._Future__propagateToListeners_handleWhenCompleteCallback.prototype = {
+    call$0() {
+      var e, s, t1, exception, t2, originalSource, _this = this, completeResult = null;
+      try {
+        t1 = _this._box_0.listener;
+        completeResult = t1.result._zone.run$1$1(type$.dynamic_Function._as(t1.callback), type$.dynamic);
+      } catch (exception) {
+        e = A.unwrapException(exception);
+        s = A.getTraceFromException(exception);
+        t1 = _this.hasError && type$.AsyncError._as(_this._box_1.source._resultOrListeners).error === e;
+        t2 = _this._box_0;
+        if (t1)
+          t2.listenerValueOrError = type$.AsyncError._as(_this._box_1.source._resultOrListeners);
+        else
+          t2.listenerValueOrError = A.AsyncError$(e, s);
+        t2.listenerHasError = true;
+        return;
+      }
+      if (completeResult instanceof A._Future && (completeResult._state & 24) !== 0) {
+        if ((completeResult._state & 16) !== 0) {
+          t1 = _this._box_0;
+          t1.listenerValueOrError = type$.AsyncError._as(completeResult._resultOrListeners);
+          t1.listenerHasError = true;
+        }
+        return;
+      }
+      if (type$.Future_dynamic._is(completeResult)) {
+        originalSource = _this._box_1.source;
+        t1 = _this._box_0;
+        t1.listenerValueOrError = completeResult.then$1$1(new A._Future__propagateToListeners_handleWhenCompleteCallback_closure(originalSource), type$.dynamic);
+        t1.listenerHasError = false;
+      }
+    },
+    $signature: 0
+  };
+  A._Future__propagateToListeners_handleWhenCompleteCallback_closure.prototype = {
+    call$1(_) {
+      return this.originalSource;
+    },
+    $signature: 9
+  };
+  A._Future__propagateToListeners_handleValueCallback.prototype = {
+    call$0() {
+      var e, s, t1, t2, t3, t4, t5, exception;
+      try {
+        t1 = this._box_0;
+        t2 = t1.listener;
+        t3 = t2.$ti;
+        t4 = t3._precomputed1;
+        t5 = t4._as(this.sourceResult);
+        t1.listenerValueOrError = t2.result._zone.runUnary$2$2(t3._eval$1("2/(1)")._as(t2.callback), t5, t3._eval$1("2/"), t4);
+      } catch (exception) {
+        e = A.unwrapException(exception);
+        s = A.getTraceFromException(exception);
+        t1 = this._box_0;
+        t1.listenerValueOrError = A.AsyncError$(e, s);
+        t1.listenerHasError = true;
+      }
+    },
+    $signature: 0
+  };
+  A._Future__propagateToListeners_handleError.prototype = {
+    call$0() {
+      var asyncError, e, s, t1, exception, t2, _this = this;
+      try {
+        asyncError = type$.AsyncError._as(_this._box_1.source._resultOrListeners);
+        t1 = _this._box_0;
+        if (t1.listener.matchesErrorTest$1(asyncError) && t1.listener.errorCallback != null) {
+          t1.listenerValueOrError = t1.listener.handleError$1(asyncError);
+          t1.listenerHasError = false;
+        }
+      } catch (exception) {
+        e = A.unwrapException(exception);
+        s = A.getTraceFromException(exception);
+        t1 = type$.AsyncError._as(_this._box_1.source._resultOrListeners);
+        t2 = _this._box_0;
+        if (t1.error === e)
+          t2.listenerValueOrError = t1;
+        else
+          t2.listenerValueOrError = A.AsyncError$(e, s);
+        t2.listenerHasError = true;
+      }
+    },
+    $signature: 0
+  };
+  A._AsyncCallbackEntry.prototype = {};
+  A.Stream.prototype = {
+    get$length(_) {
+      var t2, t3, _this = this, t1 = {},
+        future = new A._Future($.Zone__current, type$._Future_int);
+      t1.count = 0;
+      t2 = _this.$ti;
+      t3 = t2._eval$1("~(1)?")._as(new A.Stream_length_closure(t1, _this));
+      type$.nullable_void_Function._as(new A.Stream_length_closure0(t1, future));
+      A._EventStreamSubscription$(_this._target, _this._eventType, t3, false, t2._precomputed1);
+      return future;
+    }
+  };
+  A.Stream_length_closure.prototype = {
+    call$1(_) {
+      this.$this.$ti._precomputed1._as(_);
+      ++this._box_0.count;
+    },
+    $signature() {
+      return this.$this.$ti._eval$1("~(1)");
+    }
+  };
+  A.Stream_length_closure0.prototype = {
+    call$0() {
+      var t1 = this.future,
+        t2 = t1.$ti,
+        t3 = t2._eval$1("1/")._as(this._box_0.count),
+        listeners = t1._removeListeners$0();
+      t2._precomputed1._as(t3);
+      t1._state = 8;
+      t1._resultOrListeners = t3;
+      A._Future__propagateToListeners(t1, listeners);
+    },
+    $signature: 0
+  };
+  A.StreamSubscription.prototype = {};
+  A._Zone.prototype = {$isZone: 1};
+  A._rootHandleError_closure.prototype = {
+    call$0() {
+      var t1 = this.error,
+        t2 = this.stackTrace;
+      A.checkNotNullable(t1, "error", type$.Object);
+      A.checkNotNullable(t2, "stackTrace", type$.StackTrace);
+      A.Error__throw(t1, t2);
+    },
+    $signature: 0
+  };
+  A._RootZone.prototype = {
+    runGuarded$1(f) {
+      var e, s, exception;
+      type$.void_Function._as(f);
+      try {
+        if (B.C__RootZone === $.Zone__current) {
+          f.call$0();
+          return;
+        }
+        A._rootRun(null, null, this, f, type$.void);
+      } catch (exception) {
+        e = A.unwrapException(exception);
+        s = A.getTraceFromException(exception);
+        A._rootHandleError(type$.Object._as(e), type$.StackTrace._as(s));
+      }
+    },
+    runUnaryGuarded$1$2(f, arg, $T) {
+      var e, s, exception;
+      $T._eval$1("~(0)")._as(f);
+      $T._as(arg);
+      try {
+        if (B.C__RootZone === $.Zone__current) {
+          f.call$1(arg);
+          return;
+        }
+        A._rootRunUnary(null, null, this, f, arg, type$.void, $T);
+      } catch (exception) {
+        e = A.unwrapException(exception);
+        s = A.getTraceFromException(exception);
+        A._rootHandleError(type$.Object._as(e), type$.StackTrace._as(s));
+      }
+    },
+    bindCallbackGuarded$1(f) {
+      return new A._RootZone_bindCallbackGuarded_closure(this, type$.void_Function._as(f));
+    },
+    bindUnaryCallbackGuarded$1$1(f, $T) {
+      return new A._RootZone_bindUnaryCallbackGuarded_closure(this, $T._eval$1("~(0)")._as(f), $T);
+    },
+    run$1$1(f, $R) {
+      $R._eval$1("0()")._as(f);
+      if ($.Zone__current === B.C__RootZone)
+        return f.call$0();
+      return A._rootRun(null, null, this, f, $R);
+    },
+    runUnary$2$2(f, arg, $R, $T) {
+      $R._eval$1("@<0>")._bind$1($T)._eval$1("1(2)")._as(f);
+      $T._as(arg);
+      if ($.Zone__current === B.C__RootZone)
+        return f.call$1(arg);
+      return A._rootRunUnary(null, null, this, f, arg, $R, $T);
+    },
+    runBinary$3$3(f, arg1, arg2, $R, T1, T2) {
+      $R._eval$1("@<0>")._bind$1(T1)._bind$1(T2)._eval$1("1(2,3)")._as(f);
+      T1._as(arg1);
+      T2._as(arg2);
+      if ($.Zone__current === B.C__RootZone)
+        return f.call$2(arg1, arg2);
+      return A._rootRunBinary(null, null, this, f, arg1, arg2, $R, T1, T2);
+    }
+  };
+  A._RootZone_bindCallbackGuarded_closure.prototype = {
+    call$0() {
+      return this.$this.runGuarded$1(this.f);
+    },
+    $signature: 0
+  };
+  A._RootZone_bindUnaryCallbackGuarded_closure.prototype = {
+    call$1(arg) {
+      var t1 = this.T;
+      return this.$this.runUnaryGuarded$1$2(this.f, t1._as(arg), t1);
+    },
+    $signature() {
+      return this.T._eval$1("~(0)");
+    }
+  };
+  A.Error.prototype = {
+    get$stackTrace() {
+      return A.getTraceFromException(this.$thrownJsError);
+    }
+  };
   A.AssertionError.prototype = {
     toString$0(_) {
       var t1 = this.message;
@@ -2857,6 +4042,7 @@
       return "Assertion failed";
     }
   };
+  A.TypeError.prototype = {};
   A.NullThrownError.prototype = {
     toString$0(_) {
       return "Throw of null.";
@@ -2937,11 +4123,29 @@
   A.OutOfMemoryError.prototype = {
     toString$0(_) {
       return "Out of Memory";
-    }
+    },
+    get$stackTrace() {
+      return null;
+    },
+    $isError: 1
+  };
+  A.StackOverflowError.prototype = {
+    toString$0(_) {
+      return "Stack Overflow";
+    },
+    get$stackTrace() {
+      return null;
+    },
+    $isError: 1
   };
   A.CyclicInitializationError.prototype = {
     toString$0(_) {
       return "Reading static variable '" + this.variableName + "' during its initialization";
+    }
+  };
+  A._Exception.prototype = {
+    toString$0(_) {
+      return "Exception: " + this.message;
     }
   };
   A.Null.prototype = {
@@ -2956,6 +4160,12 @@
     toString() {
       return this.toString$0(this);
     }
+  };
+  A._StringStackTrace.prototype = {
+    toString$0(_) {
+      return "";
+    },
+    $isStackTrace: 1
   };
   A.StringBuffer.prototype = {
     get$length(_) {
@@ -2989,17 +4199,43 @@
     },
     $isCanvasRenderingContext2D: 1
   };
+  A.CharacterData.prototype = {
+    get$length(receiver) {
+      return receiver.length;
+    }
+  };
   A.DomException.prototype = {
     toString$0(receiver) {
       return String(receiver);
     }
   };
+  A.DomRectReadOnly.prototype = {
+    toString$0(receiver) {
+      var t2, t3, t4,
+        t1 = receiver.left;
+      t1.toString;
+      t2 = receiver.top;
+      t2.toString;
+      t3 = receiver.width;
+      t3.toString;
+      t4 = receiver.height;
+      t4.toString;
+      return "Rectangle (" + A.S(t1) + ", " + A.S(t2) + ") " + A.S(t3) + " x " + A.S(t4);
+    }
+  };
   A.Element.prototype = {
     toString$0(receiver) {
       return receiver.localName;
-    }
+    },
+    $isElement: 1
   };
-  A.EventTarget.prototype = {};
+  A.Event.prototype = {$isEvent: 1};
+  A.EventTarget.prototype = {
+    _addEventListener$3(receiver, type, listener, options) {
+      return receiver.addEventListener(type, A.convertDartClosureToJS(type$.nullable_dynamic_Function_Event._as(listener), 1), false);
+    },
+    $isEventTarget: 1
+  };
   A.FormElement.prototype = {
     get$length(receiver) {
       return receiver.length;
@@ -3010,6 +4246,31 @@
       receiver.src = value;
     }
   };
+  A.MouseEvent.prototype = {
+    get$offset(receiver) {
+      var t1, t2, target, t3, t4, t5;
+      if (!!receiver.offsetX)
+        return new A.Point(receiver.offsetX, receiver.offsetY, type$.Point_num);
+      else {
+        t1 = receiver.target;
+        t2 = type$.Element;
+        if (!t2._is(A._convertNativeToDart_EventTarget(t1)))
+          throw A.wrapException(A.UnsupportedError$("offsetX is only supported on elements"));
+        target = t2._as(A._convertNativeToDart_EventTarget(t1));
+        t1 = receiver.clientX;
+        t2 = receiver.clientY;
+        t3 = type$.Point_num;
+        t4 = target.getBoundingClientRect();
+        t5 = t4.left;
+        t5.toString;
+        t4 = t4.top;
+        t4.toString;
+        t3._as(new A.Point(t5, t4, t3));
+        return new A.Point(B.JSNumber_methods.toInt$0(t1 - t5), B.JSNumber_methods.toInt$0(t2 - t4), t3);
+      }
+    },
+    $isMouseEvent: 1
+  };
   A.Node.prototype = {
     toString$0(receiver) {
       var value = receiver.nodeValue;
@@ -3019,6 +4280,38 @@
   A.SelectElement.prototype = {
     get$length(receiver) {
       return receiver.length;
+    }
+  };
+  A.UIEvent.prototype = {};
+  A.Window.prototype = {$isWindowBase: 1};
+  A._DomRect.prototype = {
+    toString$0(receiver) {
+      var t2, t3, t4,
+        t1 = receiver.left;
+      t1.toString;
+      t2 = receiver.top;
+      t2.toString;
+      t3 = receiver.width;
+      t3.toString;
+      t4 = receiver.height;
+      t4.toString;
+      return "Rectangle (" + A.S(t1) + ", " + A.S(t2) + ") " + A.S(t3) + " x " + A.S(t4);
+    }
+  };
+  A.EventStreamProvider.prototype = {};
+  A._EventStream.prototype = {};
+  A._ElementEventStreamImpl.prototype = {};
+  A._EventStreamSubscription.prototype = {};
+  A._EventStreamSubscription_closure.prototype = {
+    call$1(e) {
+      return this.onData.call$1(type$.Event._as(e));
+    },
+    $signature: 10
+  };
+  A._DOMWindowCrossFrame.prototype = {$isEventTarget: 1, $isWindowBase: 1};
+  A.Point.prototype = {
+    toString$0(_) {
+      return "Point(" + A.S(this.x) + ", " + A.S(this.y) + ")";
     }
   };
   A.UpdateTileBitmaskCommand.prototype = {};
@@ -3041,7 +4334,7 @@
       if (t2.contains$1(0, direction))
         B.JSArray_methods.add$1(t1.updateTileBitmaskCommands, new A.UpdateTileBitmaskCommand(t2, direction));
     },
-    $signature: 0
+    $signature: 3
   };
   A.UpdateTileBitmasksCommand_execute_closure0.prototype = {
     call$1(command) {
@@ -3081,7 +4374,7 @@
       tileToUpdate0.bitmask = bitmask;
       t1.$set$2(t2, tileToUpdate0);
     },
-    $signature: 4
+    $signature: 11
   };
   A.calcGroundBitmask_closure.prototype = {
     call$1(direction) {
@@ -3106,34 +4399,9 @@
       }
       ++this._box_0.bit;
     },
-    $signature: 0
+    $signature: 3
   };
   A.Command.prototype = {};
-  A.DrawCommand.prototype = {
-    execute$0() {
-      var t4, t5, _this = this,
-        t1 = _this.grid,
-        t2 = _this.tile,
-        t3 = _this.coordinates;
-      _this.__DrawCommand_setTileCommand_A = new A.SetTileCommand(t1, t2, t3);
-      t4 = t1.__Grid__grid_A;
-      t4 === $ && A.throwLateFieldNI("_grid");
-      t5 = t3.y;
-      if (!(t5 >= 0 && t5 < t4.length))
-        return A.ioore(t4, t5);
-      t5 = t4[t5];
-      t4 = t3.x;
-      if (!(t4 >= 0 && t4 < t5.length))
-        return A.ioore(t5, t4);
-      t4 = t5[t4];
-      t4.toString;
-      type$.Tile._as(t4);
-      t1.$set$2(t3, t2);
-      t3 = new A.UpdateTileBitmasksCommand(t1, t3, A._setArrayType([], type$.JSArray_UpdateTileBitmaskCommand));
-      _this.__DrawCommand_updateTileBitmasksCommand_A = t3;
-      t3.execute$0();
-    }
-  };
   A.Grid.prototype = {
     Grid$3$fillValue(height, width, fillValue, $T) {
       var t1, _length0, t2, i, _list0, i0, _this = this,
@@ -3187,7 +4455,37 @@
     call$0() {
       return A.HoleTile$();
     },
-    $signature: 5
+    $signature: 12
+  };
+  A.main_closure.prototype = {
+    call$1($event) {
+      var t1, t2, xPosition, yPosition, clickedPosition;
+      type$.MouseEvent._as($event);
+      A.print($event);
+      t1 = J.getInterceptor$x($event);
+      A.print(t1.get$offset($event));
+      t2 = A._asInt(t1.get$offset($event).x);
+      t1 = A._asInt(t1.get$offset($event).y);
+      xPosition = B.JSInt_methods._tdivFast$1(t2, 16);
+      yPosition = B.JSInt_methods._tdivFast$1(t1, 16);
+      clickedPosition = new A.Position(xPosition, yPosition);
+      t1 = $.$get$tileGrid();
+      t2 = t1.__Grid__grid_A;
+      t2 === $ && A.throwLateFieldNI("_grid");
+      if (!(yPosition >= 0 && yPosition < t2.length))
+        return A.ioore(t2, yPosition);
+      t2 = t2[yPosition];
+      if (!(xPosition >= 0 && xPosition < t2.length))
+        return A.ioore(t2, xPosition);
+      t2 = t2[xPosition];
+      t2.toString;
+      type$.Tile._as(t2);
+      t1.$set$2(clickedPosition, new A.GroundTile("Ground Tile", "Tile"));
+      new A.UpdateTileBitmasksCommand(t1, clickedPosition, A._setArrayType([], type$.JSArray_UpdateTileBitmaskCommand)).execute$0();
+      A.clear();
+      A.drawGrid();
+    },
+    $signature: 13
   };
   A.Position.prototype = {
     $add(_, other) {
@@ -3204,7 +4502,6 @@
       return "Position(" + this.x + ", " + this.y + ")";
     }
   };
-  A.SetTileCommand.prototype = {};
   A.Tile.prototype = {
     toString$0(_) {
       return "(" + this.get$tileType() + ": " + B.JSString_methods.padLeft$2(B.JSInt_methods.toRadixString$1(this.bitmask, 2), 4, "0") + ")";
@@ -3229,68 +4526,112 @@
     _ = J.LegacyJavaScriptObject.prototype;
     _.super$LegacyJavaScriptObject$toString = _.toString$0;
   })();
+  (function installTearOffs() {
+    var _static_1 = hunkHelpers._static_1,
+      _static_0 = hunkHelpers._static_0;
+    _static_1(A, "async__AsyncRun__scheduleImmediateJsOverride$closure", "_AsyncRun__scheduleImmediateJsOverride", 1);
+    _static_1(A, "async__AsyncRun__scheduleImmediateWithSetImmediate$closure", "_AsyncRun__scheduleImmediateWithSetImmediate", 1);
+    _static_1(A, "async__AsyncRun__scheduleImmediateWithTimer$closure", "_AsyncRun__scheduleImmediateWithTimer", 1);
+    _static_0(A, "async___startMicrotaskLoop$closure", "_startMicrotaskLoop", 0);
+  })();
   (function inheritance() {
     var _inherit = hunkHelpers.inherit,
       _inheritMany = hunkHelpers.inheritMany;
     _inherit(A.Object, null);
-    _inheritMany(A.Object, [A.JS_CONST, J.Interceptor, J.ArrayIterator, A.Error, A.Closure, A.Rti, A._FunctionParameters, A.OutOfMemoryError, A.Null, A.StringBuffer, A.Command, A.Grid, A.Position, A.Tile]);
+    _inheritMany(A.Object, [A.JS_CONST, J.Interceptor, J.ArrayIterator, A.Error, A.TypeErrorDecoder, A.NullThrownFromJavaScriptException, A._StackTrace, A.Closure, A.Rti, A._FunctionParameters, A._TimerImpl, A.AsyncError, A._FutureListener, A._Future, A._AsyncCallbackEntry, A.Stream, A.StreamSubscription, A._Zone, A.OutOfMemoryError, A.StackOverflowError, A._Exception, A.Null, A._StringStackTrace, A.StringBuffer, A.EventStreamProvider, A._DOMWindowCrossFrame, A.Point, A.Command, A.Grid, A.Position, A.Tile]);
     _inheritMany(J.Interceptor, [J.JSBool, J.JSNull, J.JavaScriptObject, J.JSArray, J.JSNumber, J.JSString]);
-    _inheritMany(J.JavaScriptObject, [J.LegacyJavaScriptObject, A.EventTarget, A.CanvasRenderingContext2D, A.DomException]);
+    _inheritMany(J.JavaScriptObject, [J.LegacyJavaScriptObject, A.EventTarget, A.CanvasRenderingContext2D, A.DomException, A.DomRectReadOnly, A.Event]);
     _inheritMany(J.LegacyJavaScriptObject, [J.PlainJavaScriptObject, J.UnknownJavaScriptObject, J.JavaScriptFunction]);
     _inherit(J.JSUnmodifiableArray, J.JSArray);
     _inheritMany(J.JSNumber, [J.JSInt, J.JSNumNotInt]);
-    _inheritMany(A.Error, [A.LateError, A.RuntimeError, A._Error, A.AssertionError, A.NullThrownError, A.ArgumentError, A.UnsupportedError, A.UnimplementedError, A.ConcurrentModificationError, A.CyclicInitializationError]);
-    _inheritMany(A.Closure, [A.Closure0Args, A.Closure2Args, A.TearOffClosure, A.initHooks_closure, A.initHooks_closure1, A.UpdateTileBitmasksCommand_execute_closure, A.UpdateTileBitmasksCommand_execute_closure0, A.calcGroundBitmask_closure]);
+    _inheritMany(A.Error, [A.LateError, A.TypeError, A.JsNoSuchMethodError, A.UnknownJsTypeError, A.RuntimeError, A._Error, A.AssertionError, A.NullThrownError, A.ArgumentError, A.UnsupportedError, A.UnimplementedError, A.ConcurrentModificationError, A.CyclicInitializationError]);
+    _inherit(A.NullError, A.TypeError);
+    _inheritMany(A.Closure, [A.Closure0Args, A.Closure2Args, A.TearOffClosure, A.initHooks_closure, A.initHooks_closure1, A._AsyncRun__initializeScheduleImmediate_internalCallback, A._AsyncRun__initializeScheduleImmediate_closure, A._Future__propagateToListeners_handleWhenCompleteCallback_closure, A.Stream_length_closure, A._RootZone_bindUnaryCallbackGuarded_closure, A._EventStreamSubscription_closure, A.UpdateTileBitmasksCommand_execute_closure, A.UpdateTileBitmasksCommand_execute_closure0, A.calcGroundBitmask_closure, A.main_closure]);
     _inheritMany(A.TearOffClosure, [A.StaticClosure, A.BoundClosure]);
     _inherit(A.initHooks_closure0, A.Closure2Args);
     _inherit(A._TypeError, A._Error);
+    _inheritMany(A.Closure0Args, [A._AsyncRun__scheduleImmediateJsOverride_internalCallback, A._AsyncRun__scheduleImmediateWithSetImmediate_internalCallback, A._TimerImpl_internalCallback, A._Future__addListener_closure, A._Future__prependListeners_closure, A._Future__propagateToListeners_handleWhenCompleteCallback, A._Future__propagateToListeners_handleValueCallback, A._Future__propagateToListeners_handleError, A.Stream_length_closure0, A._rootHandleError_closure, A._RootZone_bindCallbackGuarded_closure, A.TileGrid_closure]);
+    _inherit(A._RootZone, A._Zone);
     _inheritMany(A.ArgumentError, [A.RangeError, A.IndexError]);
-    _inherit(A.Node, A.EventTarget);
-    _inherit(A.Element, A.Node);
+    _inheritMany(A.EventTarget, [A.Node, A.Window]);
+    _inheritMany(A.Node, [A.Element, A.CharacterData]);
     _inherit(A.HtmlElement, A.Element);
     _inheritMany(A.HtmlElement, [A.AnchorElement, A.AreaElement, A.CanvasElement, A.FormElement, A.ImageElement, A.SelectElement]);
-    _inheritMany(A.Command, [A.UpdateTileBitmaskCommand, A.UpdateTileBitmasksCommand, A.DrawCommand, A.SetTileCommand]);
+    _inherit(A.UIEvent, A.Event);
+    _inherit(A.MouseEvent, A.UIEvent);
+    _inherit(A._DomRect, A.DomRectReadOnly);
+    _inherit(A._EventStream, A.Stream);
+    _inherit(A._ElementEventStreamImpl, A._EventStream);
+    _inherit(A._EventStreamSubscription, A.StreamSubscription);
+    _inheritMany(A.Command, [A.UpdateTileBitmaskCommand, A.UpdateTileBitmasksCommand]);
     _inherit(A.TileGrid, A.Grid);
-    _inherit(A.TileGrid_closure, A.Closure0Args);
     _inheritMany(A.Tile, [A.GroundTile, A.HoleTile]);
   })();
   var init = {
     typeUniverse: {eC: new Map(), tR: {}, eT: {}, tPV: {}, sEA: []},
     mangledGlobalNames: {int: "int", double: "double", num: "num", String: "String", bool: "bool", Null: "Null", List: "List"},
     mangledNames: {},
-    types: ["~(Position)", "@(@)", "@(@,String)", "@(String)", "~(UpdateTileBitmaskCommand)", "HoleTile()"],
+    types: ["~()", "~(~())", "Null()", "~(Position)", "@(@)", "@(@,String)", "@(String)", "Null(@)", "Null(~())", "_Future<@>(@)", "~(Event)", "~(UpdateTileBitmaskCommand)", "HoleTile()", "~(MouseEvent)"],
     interceptorsByTag: null,
     leafTags: null,
     arrayRti: Symbol("$ti")
   };
-  A._Universe_addRules(init.typeUniverse, JSON.parse('{"PlainJavaScriptObject":"LegacyJavaScriptObject","UnknownJavaScriptObject":"LegacyJavaScriptObject","JavaScriptFunction":"LegacyJavaScriptObject","JSBool":{"bool":[]},"JSArray":{"List":["1"],"Iterable":["1"]},"JSUnmodifiableArray":{"JSArray":["1"],"List":["1"],"Iterable":["1"]},"JSNumber":{"num":[]},"JSInt":{"int":[],"num":[]},"JSNumNotInt":{"num":[]},"JSString":{"String":[]},"List":{"Iterable":["1"]},"TileGrid":{"Grid":["Tile"],"Grid.T":"Tile"},"HoleTile":{"Tile":[]},"GroundTile":{"Tile":[]}}'));
+  A._Universe_addRules(init.typeUniverse, JSON.parse('{"PlainJavaScriptObject":"LegacyJavaScriptObject","UnknownJavaScriptObject":"LegacyJavaScriptObject","JavaScriptFunction":"LegacyJavaScriptObject","AbortPaymentEvent":"Event","ExtendableEvent":"Event","MathMLElement":"Element","AudioElement":"HtmlElement","MediaElement":"HtmlElement","HtmlDocument":"Node","Document":"Node","PointerEvent":"MouseEvent","CompositionEvent":"UIEvent","CDataSection":"CharacterData","Text":"CharacterData","JSBool":{"bool":[]},"JSArray":{"List":["1"],"Iterable":["1"]},"JSUnmodifiableArray":{"JSArray":["1"],"List":["1"],"Iterable":["1"]},"JSNumber":{"num":[]},"JSInt":{"int":[],"num":[]},"JSNumNotInt":{"num":[]},"JSString":{"String":[]},"LateError":{"Error":[]},"NullError":{"TypeError":[],"Error":[]},"JsNoSuchMethodError":{"Error":[]},"UnknownJsTypeError":{"Error":[]},"_StackTrace":{"StackTrace":[]},"Closure":{"Function":[]},"Closure0Args":{"Function":[]},"Closure2Args":{"Function":[]},"TearOffClosure":{"Function":[]},"StaticClosure":{"Function":[]},"BoundClosure":{"Function":[]},"RuntimeError":{"Error":[]},"_Error":{"Error":[]},"_TypeError":{"TypeError":[],"Error":[]},"_Future":{"Future":["1"]},"AsyncError":{"Error":[]},"_Zone":{"Zone":[]},"_RootZone":{"_Zone":[],"Zone":[]},"int":{"num":[]},"List":{"Iterable":["1"]},"AssertionError":{"Error":[]},"TypeError":{"Error":[]},"NullThrownError":{"Error":[]},"ArgumentError":{"Error":[]},"RangeError":{"Error":[]},"IndexError":{"Error":[]},"UnsupportedError":{"Error":[]},"UnimplementedError":{"Error":[]},"ConcurrentModificationError":{"Error":[]},"OutOfMemoryError":{"Error":[]},"StackOverflowError":{"Error":[]},"CyclicInitializationError":{"Error":[]},"_StringStackTrace":{"StackTrace":[]},"MouseEvent":{"Event":[]},"HtmlElement":{"Element":[],"EventTarget":[]},"AnchorElement":{"Element":[],"EventTarget":[]},"AreaElement":{"Element":[],"EventTarget":[]},"CanvasElement":{"Element":[],"EventTarget":[]},"CharacterData":{"EventTarget":[]},"Element":{"EventTarget":[]},"FormElement":{"Element":[],"EventTarget":[]},"ImageElement":{"Element":[],"EventTarget":[]},"Node":{"EventTarget":[]},"SelectElement":{"Element":[],"EventTarget":[]},"UIEvent":{"Event":[]},"Window":{"WindowBase":[],"EventTarget":[]},"_EventStream":{"Stream":["1"]},"_ElementEventStreamImpl":{"_EventStream":["1"],"Stream":["1"]},"_DOMWindowCrossFrame":{"WindowBase":[],"EventTarget":[]},"TileGrid":{"Grid":["Tile"],"Grid.T":"Tile"},"HoleTile":{"Tile":[]},"GroundTile":{"Tile":[]}}'));
+  A._Universe_addErasedTypes(init.typeUniverse, JSON.parse('{"StreamSubscription":1}'));
+  var string$ = {
+    Error_: "Error handler must accept one Object or one Object and a StackTrace as arguments, and return a value of the returned future's type"
+  };
   var type$ = (function rtii() {
     var findType = A.findType;
     return {
+      AsyncError: findType("AsyncError"),
       CanvasElement: findType("CanvasElement"),
       CanvasRenderingContext2D: findType("CanvasRenderingContext2D"),
+      Element: findType("Element"),
+      Error: findType("Error"),
+      Event: findType("Event"),
       Function: findType("Function"),
+      Future_dynamic: findType("Future<@>"),
       JSArray_Position: findType("JSArray<Position>"),
       JSArray_String: findType("JSArray<String>"),
       JSArray_UpdateTileBitmaskCommand: findType("JSArray<UpdateTileBitmaskCommand>"),
       JSArray_dynamic: findType("JSArray<@>"),
       JSNull: findType("JSNull"),
       JavaScriptFunction: findType("JavaScriptFunction"),
+      MouseEvent: findType("MouseEvent"),
       Null: findType("Null"),
       Object: findType("Object"),
+      Point_num: findType("Point<num>"),
       Position: findType("Position"),
+      StackTrace: findType("StackTrace"),
       String: findType("String"),
       Tile: findType("Tile"),
+      TypeError: findType("TypeError"),
       UnknownJavaScriptObject: findType("UnknownJavaScriptObject"),
       UpdateTileBitmaskCommand: findType("UpdateTileBitmaskCommand"),
+      WindowBase: findType("WindowBase"),
+      _ElementEventStreamImpl_MouseEvent: findType("_ElementEventStreamImpl<MouseEvent>"),
+      _Future_dynamic: findType("_Future<@>"),
+      _Future_int: findType("_Future<int>"),
       bool: findType("bool"),
+      bool_Function_Object: findType("bool(Object)"),
       double: findType("double"),
+      dynamic: findType("@"),
+      dynamic_Function: findType("@()"),
+      dynamic_Function_Object: findType("@(Object)"),
+      dynamic_Function_Object_StackTrace: findType("@(Object,StackTrace)"),
       int: findType("int"),
       legacy_Never: findType("0&*"),
       legacy_Object: findType("Object*"),
+      nullable_EventTarget: findType("EventTarget?"),
       nullable_Future_Null: findType("Future<Null>?"),
       nullable_Object: findType("Object?"),
-      num: findType("num")
+      nullable__FutureListener_dynamic_dynamic: findType("_FutureListener<@,@>?"),
+      nullable_dynamic_Function_Event: findType("@(Event)?"),
+      nullable_void_Function: findType("~()?"),
+      num: findType("num"),
+      void: findType("~"),
+      void_Function: findType("~()")
     };
   })();
   (function constants() {
@@ -3300,6 +4641,7 @@
     B.Interceptor_methods = J.Interceptor.prototype;
     B.JSArray_methods = J.JSArray.prototype;
     B.JSInt_methods = J.JSInt.prototype;
+    B.JSNumber_methods = J.JSNumber.prototype;
     B.JSString_methods = J.JSString.prototype;
     B.JavaScriptFunction_methods = J.JavaScriptFunction.prototype;
     B.JavaScriptObject_methods = J.JavaScriptObject.prototype;
@@ -3426,6 +4768,8 @@
     B.C_JS_CONST3 = function(hooks) { return hooks; }
 ;
     B.C_OutOfMemoryError = new A.OutOfMemoryError();
+    B.C__RootZone = new A._RootZone();
+    B.C__StringStackTrace = new A._StringStackTrace();
   })();
   (function staticFields() {
     $._JS_INTEROP_INTERCEPTOR_TAG = null;
@@ -3437,6 +4781,11 @@
     $.dispatchRecordsForInstanceTags = null;
     $.interceptorsForUncacheableTags = null;
     $.initNativeDispatchFlag = null;
+    $._nextCallback = null;
+    $._lastCallback = null;
+    $._lastPriorityCallback = null;
+    $._isInCallbackLoop = false;
+    $.Zone__current = B.C__RootZone;
     $._toStringVisiting = A._setArrayType([], A.findType("JSArray<Object>"));
     $.canvas = null;
     $.ctx = null;
@@ -3445,6 +4794,51 @@
     var _lazyFinal = hunkHelpers.lazyFinal,
       _lazy = hunkHelpers.lazy;
     _lazyFinal($, "DART_CLOSURE_PROPERTY_NAME", "$get$DART_CLOSURE_PROPERTY_NAME", () => A.getIsolateAffinityTag("_$dart_dartClosure"));
+    _lazyFinal($, "TypeErrorDecoder_noSuchMethodPattern", "$get$TypeErrorDecoder_noSuchMethodPattern", () => A.TypeErrorDecoder_extractPattern(A.TypeErrorDecoder_provokeCallErrorOn({
+      toString: function() {
+        return "$receiver$";
+      }
+    })));
+    _lazyFinal($, "TypeErrorDecoder_notClosurePattern", "$get$TypeErrorDecoder_notClosurePattern", () => A.TypeErrorDecoder_extractPattern(A.TypeErrorDecoder_provokeCallErrorOn({$method$: null,
+      toString: function() {
+        return "$receiver$";
+      }
+    })));
+    _lazyFinal($, "TypeErrorDecoder_nullCallPattern", "$get$TypeErrorDecoder_nullCallPattern", () => A.TypeErrorDecoder_extractPattern(A.TypeErrorDecoder_provokeCallErrorOn(null)));
+    _lazyFinal($, "TypeErrorDecoder_nullLiteralCallPattern", "$get$TypeErrorDecoder_nullLiteralCallPattern", () => A.TypeErrorDecoder_extractPattern(function() {
+      var $argumentsExpr$ = "$arguments$";
+      try {
+        null.$method$($argumentsExpr$);
+      } catch (e) {
+        return e.message;
+      }
+    }()));
+    _lazyFinal($, "TypeErrorDecoder_undefinedCallPattern", "$get$TypeErrorDecoder_undefinedCallPattern", () => A.TypeErrorDecoder_extractPattern(A.TypeErrorDecoder_provokeCallErrorOn(void 0)));
+    _lazyFinal($, "TypeErrorDecoder_undefinedLiteralCallPattern", "$get$TypeErrorDecoder_undefinedLiteralCallPattern", () => A.TypeErrorDecoder_extractPattern(function() {
+      var $argumentsExpr$ = "$arguments$";
+      try {
+        (void 0).$method$($argumentsExpr$);
+      } catch (e) {
+        return e.message;
+      }
+    }()));
+    _lazyFinal($, "TypeErrorDecoder_nullPropertyPattern", "$get$TypeErrorDecoder_nullPropertyPattern", () => A.TypeErrorDecoder_extractPattern(A.TypeErrorDecoder_provokePropertyErrorOn(null)));
+    _lazyFinal($, "TypeErrorDecoder_nullLiteralPropertyPattern", "$get$TypeErrorDecoder_nullLiteralPropertyPattern", () => A.TypeErrorDecoder_extractPattern(function() {
+      try {
+        null.$method$;
+      } catch (e) {
+        return e.message;
+      }
+    }()));
+    _lazyFinal($, "TypeErrorDecoder_undefinedPropertyPattern", "$get$TypeErrorDecoder_undefinedPropertyPattern", () => A.TypeErrorDecoder_extractPattern(A.TypeErrorDecoder_provokePropertyErrorOn(void 0)));
+    _lazyFinal($, "TypeErrorDecoder_undefinedLiteralPropertyPattern", "$get$TypeErrorDecoder_undefinedLiteralPropertyPattern", () => A.TypeErrorDecoder_extractPattern(function() {
+      try {
+        (void 0).$method$;
+      } catch (e) {
+        return e.message;
+      }
+    }()));
+    _lazyFinal($, "_AsyncRun__scheduleImmediateClosure", "$get$_AsyncRun__scheduleImmediateClosure", () => A._AsyncRun__initializeScheduleImmediate());
     _lazy($, "tilemapImage", "$get$tilemapImage", () => {
       var e = A.document().createElement("img");
       return e;
@@ -3474,8 +4868,8 @@
       }
       init.dispatchPropertyName = init.getIsolateTag("dispatch_record");
     }();
-    hunkHelpers.setOrUpdateInterceptorsByTag({ApplicationCacheErrorEvent: J.JavaScriptObject, DOMError: J.JavaScriptObject, ErrorEvent: J.JavaScriptObject, Event: J.JavaScriptObject, InputEvent: J.JavaScriptObject, SubmitEvent: J.JavaScriptObject, MediaError: J.JavaScriptObject, NavigatorUserMediaError: J.JavaScriptObject, OverconstrainedError: J.JavaScriptObject, PositionError: J.JavaScriptObject, GeolocationPositionError: J.JavaScriptObject, SensorErrorEvent: J.JavaScriptObject, SpeechRecognitionError: J.JavaScriptObject, WebGLRenderingContext: J.JavaScriptObject, WebGL2RenderingContext: J.JavaScriptObject, HTMLAudioElement: A.HtmlElement, HTMLBRElement: A.HtmlElement, HTMLBaseElement: A.HtmlElement, HTMLBodyElement: A.HtmlElement, HTMLButtonElement: A.HtmlElement, HTMLContentElement: A.HtmlElement, HTMLDListElement: A.HtmlElement, HTMLDataElement: A.HtmlElement, HTMLDataListElement: A.HtmlElement, HTMLDetailsElement: A.HtmlElement, HTMLDialogElement: A.HtmlElement, HTMLDivElement: A.HtmlElement, HTMLEmbedElement: A.HtmlElement, HTMLFieldSetElement: A.HtmlElement, HTMLHRElement: A.HtmlElement, HTMLHeadElement: A.HtmlElement, HTMLHeadingElement: A.HtmlElement, HTMLHtmlElement: A.HtmlElement, HTMLIFrameElement: A.HtmlElement, HTMLInputElement: A.HtmlElement, HTMLLIElement: A.HtmlElement, HTMLLabelElement: A.HtmlElement, HTMLLegendElement: A.HtmlElement, HTMLLinkElement: A.HtmlElement, HTMLMapElement: A.HtmlElement, HTMLMediaElement: A.HtmlElement, HTMLMenuElement: A.HtmlElement, HTMLMetaElement: A.HtmlElement, HTMLMeterElement: A.HtmlElement, HTMLModElement: A.HtmlElement, HTMLOListElement: A.HtmlElement, HTMLObjectElement: A.HtmlElement, HTMLOptGroupElement: A.HtmlElement, HTMLOptionElement: A.HtmlElement, HTMLOutputElement: A.HtmlElement, HTMLParagraphElement: A.HtmlElement, HTMLParamElement: A.HtmlElement, HTMLPictureElement: A.HtmlElement, HTMLPreElement: A.HtmlElement, HTMLProgressElement: A.HtmlElement, HTMLQuoteElement: A.HtmlElement, HTMLScriptElement: A.HtmlElement, HTMLShadowElement: A.HtmlElement, HTMLSlotElement: A.HtmlElement, HTMLSourceElement: A.HtmlElement, HTMLSpanElement: A.HtmlElement, HTMLStyleElement: A.HtmlElement, HTMLTableCaptionElement: A.HtmlElement, HTMLTableCellElement: A.HtmlElement, HTMLTableDataCellElement: A.HtmlElement, HTMLTableHeaderCellElement: A.HtmlElement, HTMLTableColElement: A.HtmlElement, HTMLTableElement: A.HtmlElement, HTMLTableRowElement: A.HtmlElement, HTMLTableSectionElement: A.HtmlElement, HTMLTemplateElement: A.HtmlElement, HTMLTextAreaElement: A.HtmlElement, HTMLTimeElement: A.HtmlElement, HTMLTitleElement: A.HtmlElement, HTMLTrackElement: A.HtmlElement, HTMLUListElement: A.HtmlElement, HTMLUnknownElement: A.HtmlElement, HTMLVideoElement: A.HtmlElement, HTMLDirectoryElement: A.HtmlElement, HTMLFontElement: A.HtmlElement, HTMLFrameElement: A.HtmlElement, HTMLFrameSetElement: A.HtmlElement, HTMLMarqueeElement: A.HtmlElement, HTMLElement: A.HtmlElement, HTMLAnchorElement: A.AnchorElement, HTMLAreaElement: A.AreaElement, HTMLCanvasElement: A.CanvasElement, CanvasRenderingContext2D: A.CanvasRenderingContext2D, DOMException: A.DomException, MathMLElement: A.Element, SVGAElement: A.Element, SVGAnimateElement: A.Element, SVGAnimateMotionElement: A.Element, SVGAnimateTransformElement: A.Element, SVGAnimationElement: A.Element, SVGCircleElement: A.Element, SVGClipPathElement: A.Element, SVGDefsElement: A.Element, SVGDescElement: A.Element, SVGDiscardElement: A.Element, SVGEllipseElement: A.Element, SVGFEBlendElement: A.Element, SVGFEColorMatrixElement: A.Element, SVGFEComponentTransferElement: A.Element, SVGFECompositeElement: A.Element, SVGFEConvolveMatrixElement: A.Element, SVGFEDiffuseLightingElement: A.Element, SVGFEDisplacementMapElement: A.Element, SVGFEDistantLightElement: A.Element, SVGFEFloodElement: A.Element, SVGFEFuncAElement: A.Element, SVGFEFuncBElement: A.Element, SVGFEFuncGElement: A.Element, SVGFEFuncRElement: A.Element, SVGFEGaussianBlurElement: A.Element, SVGFEImageElement: A.Element, SVGFEMergeElement: A.Element, SVGFEMergeNodeElement: A.Element, SVGFEMorphologyElement: A.Element, SVGFEOffsetElement: A.Element, SVGFEPointLightElement: A.Element, SVGFESpecularLightingElement: A.Element, SVGFESpotLightElement: A.Element, SVGFETileElement: A.Element, SVGFETurbulenceElement: A.Element, SVGFilterElement: A.Element, SVGForeignObjectElement: A.Element, SVGGElement: A.Element, SVGGeometryElement: A.Element, SVGGraphicsElement: A.Element, SVGImageElement: A.Element, SVGLineElement: A.Element, SVGLinearGradientElement: A.Element, SVGMarkerElement: A.Element, SVGMaskElement: A.Element, SVGMetadataElement: A.Element, SVGPathElement: A.Element, SVGPatternElement: A.Element, SVGPolygonElement: A.Element, SVGPolylineElement: A.Element, SVGRadialGradientElement: A.Element, SVGRectElement: A.Element, SVGScriptElement: A.Element, SVGSetElement: A.Element, SVGStopElement: A.Element, SVGStyleElement: A.Element, SVGElement: A.Element, SVGSVGElement: A.Element, SVGSwitchElement: A.Element, SVGSymbolElement: A.Element, SVGTSpanElement: A.Element, SVGTextContentElement: A.Element, SVGTextElement: A.Element, SVGTextPathElement: A.Element, SVGTextPositioningElement: A.Element, SVGTitleElement: A.Element, SVGUseElement: A.Element, SVGViewElement: A.Element, SVGGradientElement: A.Element, SVGComponentTransferFunctionElement: A.Element, SVGFEDropShadowElement: A.Element, SVGMPathElement: A.Element, Element: A.Element, EventTarget: A.EventTarget, HTMLFormElement: A.FormElement, HTMLImageElement: A.ImageElement, Document: A.Node, HTMLDocument: A.Node, Node: A.Node, HTMLSelectElement: A.SelectElement});
-    hunkHelpers.setOrUpdateLeafTags({ApplicationCacheErrorEvent: true, DOMError: true, ErrorEvent: true, Event: true, InputEvent: true, SubmitEvent: true, MediaError: true, NavigatorUserMediaError: true, OverconstrainedError: true, PositionError: true, GeolocationPositionError: true, SensorErrorEvent: true, SpeechRecognitionError: true, WebGLRenderingContext: true, WebGL2RenderingContext: true, HTMLAudioElement: true, HTMLBRElement: true, HTMLBaseElement: true, HTMLBodyElement: true, HTMLButtonElement: true, HTMLContentElement: true, HTMLDListElement: true, HTMLDataElement: true, HTMLDataListElement: true, HTMLDetailsElement: true, HTMLDialogElement: true, HTMLDivElement: true, HTMLEmbedElement: true, HTMLFieldSetElement: true, HTMLHRElement: true, HTMLHeadElement: true, HTMLHeadingElement: true, HTMLHtmlElement: true, HTMLIFrameElement: true, HTMLInputElement: true, HTMLLIElement: true, HTMLLabelElement: true, HTMLLegendElement: true, HTMLLinkElement: true, HTMLMapElement: true, HTMLMediaElement: true, HTMLMenuElement: true, HTMLMetaElement: true, HTMLMeterElement: true, HTMLModElement: true, HTMLOListElement: true, HTMLObjectElement: true, HTMLOptGroupElement: true, HTMLOptionElement: true, HTMLOutputElement: true, HTMLParagraphElement: true, HTMLParamElement: true, HTMLPictureElement: true, HTMLPreElement: true, HTMLProgressElement: true, HTMLQuoteElement: true, HTMLScriptElement: true, HTMLShadowElement: true, HTMLSlotElement: true, HTMLSourceElement: true, HTMLSpanElement: true, HTMLStyleElement: true, HTMLTableCaptionElement: true, HTMLTableCellElement: true, HTMLTableDataCellElement: true, HTMLTableHeaderCellElement: true, HTMLTableColElement: true, HTMLTableElement: true, HTMLTableRowElement: true, HTMLTableSectionElement: true, HTMLTemplateElement: true, HTMLTextAreaElement: true, HTMLTimeElement: true, HTMLTitleElement: true, HTMLTrackElement: true, HTMLUListElement: true, HTMLUnknownElement: true, HTMLVideoElement: true, HTMLDirectoryElement: true, HTMLFontElement: true, HTMLFrameElement: true, HTMLFrameSetElement: true, HTMLMarqueeElement: true, HTMLElement: false, HTMLAnchorElement: true, HTMLAreaElement: true, HTMLCanvasElement: true, CanvasRenderingContext2D: true, DOMException: true, MathMLElement: true, SVGAElement: true, SVGAnimateElement: true, SVGAnimateMotionElement: true, SVGAnimateTransformElement: true, SVGAnimationElement: true, SVGCircleElement: true, SVGClipPathElement: true, SVGDefsElement: true, SVGDescElement: true, SVGDiscardElement: true, SVGEllipseElement: true, SVGFEBlendElement: true, SVGFEColorMatrixElement: true, SVGFEComponentTransferElement: true, SVGFECompositeElement: true, SVGFEConvolveMatrixElement: true, SVGFEDiffuseLightingElement: true, SVGFEDisplacementMapElement: true, SVGFEDistantLightElement: true, SVGFEFloodElement: true, SVGFEFuncAElement: true, SVGFEFuncBElement: true, SVGFEFuncGElement: true, SVGFEFuncRElement: true, SVGFEGaussianBlurElement: true, SVGFEImageElement: true, SVGFEMergeElement: true, SVGFEMergeNodeElement: true, SVGFEMorphologyElement: true, SVGFEOffsetElement: true, SVGFEPointLightElement: true, SVGFESpecularLightingElement: true, SVGFESpotLightElement: true, SVGFETileElement: true, SVGFETurbulenceElement: true, SVGFilterElement: true, SVGForeignObjectElement: true, SVGGElement: true, SVGGeometryElement: true, SVGGraphicsElement: true, SVGImageElement: true, SVGLineElement: true, SVGLinearGradientElement: true, SVGMarkerElement: true, SVGMaskElement: true, SVGMetadataElement: true, SVGPathElement: true, SVGPatternElement: true, SVGPolygonElement: true, SVGPolylineElement: true, SVGRadialGradientElement: true, SVGRectElement: true, SVGScriptElement: true, SVGSetElement: true, SVGStopElement: true, SVGStyleElement: true, SVGElement: true, SVGSVGElement: true, SVGSwitchElement: true, SVGSymbolElement: true, SVGTSpanElement: true, SVGTextContentElement: true, SVGTextElement: true, SVGTextPathElement: true, SVGTextPositioningElement: true, SVGTitleElement: true, SVGUseElement: true, SVGViewElement: true, SVGGradientElement: true, SVGComponentTransferFunctionElement: true, SVGFEDropShadowElement: true, SVGMPathElement: true, Element: false, EventTarget: false, HTMLFormElement: true, HTMLImageElement: true, Document: true, HTMLDocument: true, Node: false, HTMLSelectElement: true});
+    hunkHelpers.setOrUpdateInterceptorsByTag({DOMError: J.JavaScriptObject, MediaError: J.JavaScriptObject, NavigatorUserMediaError: J.JavaScriptObject, OverconstrainedError: J.JavaScriptObject, PositionError: J.JavaScriptObject, GeolocationPositionError: J.JavaScriptObject, WebGLRenderingContext: J.JavaScriptObject, WebGL2RenderingContext: J.JavaScriptObject, HTMLAudioElement: A.HtmlElement, HTMLBRElement: A.HtmlElement, HTMLBaseElement: A.HtmlElement, HTMLBodyElement: A.HtmlElement, HTMLButtonElement: A.HtmlElement, HTMLContentElement: A.HtmlElement, HTMLDListElement: A.HtmlElement, HTMLDataElement: A.HtmlElement, HTMLDataListElement: A.HtmlElement, HTMLDetailsElement: A.HtmlElement, HTMLDialogElement: A.HtmlElement, HTMLDivElement: A.HtmlElement, HTMLEmbedElement: A.HtmlElement, HTMLFieldSetElement: A.HtmlElement, HTMLHRElement: A.HtmlElement, HTMLHeadElement: A.HtmlElement, HTMLHeadingElement: A.HtmlElement, HTMLHtmlElement: A.HtmlElement, HTMLIFrameElement: A.HtmlElement, HTMLInputElement: A.HtmlElement, HTMLLIElement: A.HtmlElement, HTMLLabelElement: A.HtmlElement, HTMLLegendElement: A.HtmlElement, HTMLLinkElement: A.HtmlElement, HTMLMapElement: A.HtmlElement, HTMLMediaElement: A.HtmlElement, HTMLMenuElement: A.HtmlElement, HTMLMetaElement: A.HtmlElement, HTMLMeterElement: A.HtmlElement, HTMLModElement: A.HtmlElement, HTMLOListElement: A.HtmlElement, HTMLObjectElement: A.HtmlElement, HTMLOptGroupElement: A.HtmlElement, HTMLOptionElement: A.HtmlElement, HTMLOutputElement: A.HtmlElement, HTMLParagraphElement: A.HtmlElement, HTMLParamElement: A.HtmlElement, HTMLPictureElement: A.HtmlElement, HTMLPreElement: A.HtmlElement, HTMLProgressElement: A.HtmlElement, HTMLQuoteElement: A.HtmlElement, HTMLScriptElement: A.HtmlElement, HTMLShadowElement: A.HtmlElement, HTMLSlotElement: A.HtmlElement, HTMLSourceElement: A.HtmlElement, HTMLSpanElement: A.HtmlElement, HTMLStyleElement: A.HtmlElement, HTMLTableCaptionElement: A.HtmlElement, HTMLTableCellElement: A.HtmlElement, HTMLTableDataCellElement: A.HtmlElement, HTMLTableHeaderCellElement: A.HtmlElement, HTMLTableColElement: A.HtmlElement, HTMLTableElement: A.HtmlElement, HTMLTableRowElement: A.HtmlElement, HTMLTableSectionElement: A.HtmlElement, HTMLTemplateElement: A.HtmlElement, HTMLTextAreaElement: A.HtmlElement, HTMLTimeElement: A.HtmlElement, HTMLTitleElement: A.HtmlElement, HTMLTrackElement: A.HtmlElement, HTMLUListElement: A.HtmlElement, HTMLUnknownElement: A.HtmlElement, HTMLVideoElement: A.HtmlElement, HTMLDirectoryElement: A.HtmlElement, HTMLFontElement: A.HtmlElement, HTMLFrameElement: A.HtmlElement, HTMLFrameSetElement: A.HtmlElement, HTMLMarqueeElement: A.HtmlElement, HTMLElement: A.HtmlElement, HTMLAnchorElement: A.AnchorElement, HTMLAreaElement: A.AreaElement, HTMLCanvasElement: A.CanvasElement, CanvasRenderingContext2D: A.CanvasRenderingContext2D, CDATASection: A.CharacterData, CharacterData: A.CharacterData, Comment: A.CharacterData, ProcessingInstruction: A.CharacterData, Text: A.CharacterData, DOMException: A.DomException, DOMRectReadOnly: A.DomRectReadOnly, MathMLElement: A.Element, SVGAElement: A.Element, SVGAnimateElement: A.Element, SVGAnimateMotionElement: A.Element, SVGAnimateTransformElement: A.Element, SVGAnimationElement: A.Element, SVGCircleElement: A.Element, SVGClipPathElement: A.Element, SVGDefsElement: A.Element, SVGDescElement: A.Element, SVGDiscardElement: A.Element, SVGEllipseElement: A.Element, SVGFEBlendElement: A.Element, SVGFEColorMatrixElement: A.Element, SVGFEComponentTransferElement: A.Element, SVGFECompositeElement: A.Element, SVGFEConvolveMatrixElement: A.Element, SVGFEDiffuseLightingElement: A.Element, SVGFEDisplacementMapElement: A.Element, SVGFEDistantLightElement: A.Element, SVGFEFloodElement: A.Element, SVGFEFuncAElement: A.Element, SVGFEFuncBElement: A.Element, SVGFEFuncGElement: A.Element, SVGFEFuncRElement: A.Element, SVGFEGaussianBlurElement: A.Element, SVGFEImageElement: A.Element, SVGFEMergeElement: A.Element, SVGFEMergeNodeElement: A.Element, SVGFEMorphologyElement: A.Element, SVGFEOffsetElement: A.Element, SVGFEPointLightElement: A.Element, SVGFESpecularLightingElement: A.Element, SVGFESpotLightElement: A.Element, SVGFETileElement: A.Element, SVGFETurbulenceElement: A.Element, SVGFilterElement: A.Element, SVGForeignObjectElement: A.Element, SVGGElement: A.Element, SVGGeometryElement: A.Element, SVGGraphicsElement: A.Element, SVGImageElement: A.Element, SVGLineElement: A.Element, SVGLinearGradientElement: A.Element, SVGMarkerElement: A.Element, SVGMaskElement: A.Element, SVGMetadataElement: A.Element, SVGPathElement: A.Element, SVGPatternElement: A.Element, SVGPolygonElement: A.Element, SVGPolylineElement: A.Element, SVGRadialGradientElement: A.Element, SVGRectElement: A.Element, SVGScriptElement: A.Element, SVGSetElement: A.Element, SVGStopElement: A.Element, SVGStyleElement: A.Element, SVGElement: A.Element, SVGSVGElement: A.Element, SVGSwitchElement: A.Element, SVGSymbolElement: A.Element, SVGTSpanElement: A.Element, SVGTextContentElement: A.Element, SVGTextElement: A.Element, SVGTextPathElement: A.Element, SVGTextPositioningElement: A.Element, SVGTitleElement: A.Element, SVGUseElement: A.Element, SVGViewElement: A.Element, SVGGradientElement: A.Element, SVGComponentTransferFunctionElement: A.Element, SVGFEDropShadowElement: A.Element, SVGMPathElement: A.Element, Element: A.Element, AbortPaymentEvent: A.Event, AnimationEvent: A.Event, AnimationPlaybackEvent: A.Event, ApplicationCacheErrorEvent: A.Event, BackgroundFetchClickEvent: A.Event, BackgroundFetchEvent: A.Event, BackgroundFetchFailEvent: A.Event, BackgroundFetchedEvent: A.Event, BeforeInstallPromptEvent: A.Event, BeforeUnloadEvent: A.Event, BlobEvent: A.Event, CanMakePaymentEvent: A.Event, ClipboardEvent: A.Event, CloseEvent: A.Event, CustomEvent: A.Event, DeviceMotionEvent: A.Event, DeviceOrientationEvent: A.Event, ErrorEvent: A.Event, ExtendableEvent: A.Event, ExtendableMessageEvent: A.Event, FetchEvent: A.Event, FontFaceSetLoadEvent: A.Event, ForeignFetchEvent: A.Event, GamepadEvent: A.Event, HashChangeEvent: A.Event, InstallEvent: A.Event, MediaEncryptedEvent: A.Event, MediaKeyMessageEvent: A.Event, MediaQueryListEvent: A.Event, MediaStreamEvent: A.Event, MediaStreamTrackEvent: A.Event, MessageEvent: A.Event, MIDIConnectionEvent: A.Event, MIDIMessageEvent: A.Event, MutationEvent: A.Event, NotificationEvent: A.Event, PageTransitionEvent: A.Event, PaymentRequestEvent: A.Event, PaymentRequestUpdateEvent: A.Event, PopStateEvent: A.Event, PresentationConnectionAvailableEvent: A.Event, PresentationConnectionCloseEvent: A.Event, ProgressEvent: A.Event, PromiseRejectionEvent: A.Event, PushEvent: A.Event, RTCDataChannelEvent: A.Event, RTCDTMFToneChangeEvent: A.Event, RTCPeerConnectionIceEvent: A.Event, RTCTrackEvent: A.Event, SecurityPolicyViolationEvent: A.Event, SensorErrorEvent: A.Event, SpeechRecognitionError: A.Event, SpeechRecognitionEvent: A.Event, SpeechSynthesisEvent: A.Event, StorageEvent: A.Event, SyncEvent: A.Event, TrackEvent: A.Event, TransitionEvent: A.Event, WebKitTransitionEvent: A.Event, VRDeviceEvent: A.Event, VRDisplayEvent: A.Event, VRSessionEvent: A.Event, MojoInterfaceRequestEvent: A.Event, ResourceProgressEvent: A.Event, USBConnectionEvent: A.Event, IDBVersionChangeEvent: A.Event, AudioProcessingEvent: A.Event, OfflineAudioCompletionEvent: A.Event, WebGLContextEvent: A.Event, Event: A.Event, InputEvent: A.Event, SubmitEvent: A.Event, EventTarget: A.EventTarget, HTMLFormElement: A.FormElement, HTMLImageElement: A.ImageElement, MouseEvent: A.MouseEvent, DragEvent: A.MouseEvent, PointerEvent: A.MouseEvent, WheelEvent: A.MouseEvent, Document: A.Node, DocumentFragment: A.Node, HTMLDocument: A.Node, ShadowRoot: A.Node, XMLDocument: A.Node, Attr: A.Node, DocumentType: A.Node, Node: A.Node, HTMLSelectElement: A.SelectElement, CompositionEvent: A.UIEvent, FocusEvent: A.UIEvent, KeyboardEvent: A.UIEvent, TextEvent: A.UIEvent, TouchEvent: A.UIEvent, UIEvent: A.UIEvent, Window: A.Window, DOMWindow: A.Window, ClientRect: A._DomRect, DOMRect: A._DomRect});
+    hunkHelpers.setOrUpdateLeafTags({DOMError: true, MediaError: true, NavigatorUserMediaError: true, OverconstrainedError: true, PositionError: true, GeolocationPositionError: true, WebGLRenderingContext: true, WebGL2RenderingContext: true, HTMLAudioElement: true, HTMLBRElement: true, HTMLBaseElement: true, HTMLBodyElement: true, HTMLButtonElement: true, HTMLContentElement: true, HTMLDListElement: true, HTMLDataElement: true, HTMLDataListElement: true, HTMLDetailsElement: true, HTMLDialogElement: true, HTMLDivElement: true, HTMLEmbedElement: true, HTMLFieldSetElement: true, HTMLHRElement: true, HTMLHeadElement: true, HTMLHeadingElement: true, HTMLHtmlElement: true, HTMLIFrameElement: true, HTMLInputElement: true, HTMLLIElement: true, HTMLLabelElement: true, HTMLLegendElement: true, HTMLLinkElement: true, HTMLMapElement: true, HTMLMediaElement: true, HTMLMenuElement: true, HTMLMetaElement: true, HTMLMeterElement: true, HTMLModElement: true, HTMLOListElement: true, HTMLObjectElement: true, HTMLOptGroupElement: true, HTMLOptionElement: true, HTMLOutputElement: true, HTMLParagraphElement: true, HTMLParamElement: true, HTMLPictureElement: true, HTMLPreElement: true, HTMLProgressElement: true, HTMLQuoteElement: true, HTMLScriptElement: true, HTMLShadowElement: true, HTMLSlotElement: true, HTMLSourceElement: true, HTMLSpanElement: true, HTMLStyleElement: true, HTMLTableCaptionElement: true, HTMLTableCellElement: true, HTMLTableDataCellElement: true, HTMLTableHeaderCellElement: true, HTMLTableColElement: true, HTMLTableElement: true, HTMLTableRowElement: true, HTMLTableSectionElement: true, HTMLTemplateElement: true, HTMLTextAreaElement: true, HTMLTimeElement: true, HTMLTitleElement: true, HTMLTrackElement: true, HTMLUListElement: true, HTMLUnknownElement: true, HTMLVideoElement: true, HTMLDirectoryElement: true, HTMLFontElement: true, HTMLFrameElement: true, HTMLFrameSetElement: true, HTMLMarqueeElement: true, HTMLElement: false, HTMLAnchorElement: true, HTMLAreaElement: true, HTMLCanvasElement: true, CanvasRenderingContext2D: true, CDATASection: true, CharacterData: true, Comment: true, ProcessingInstruction: true, Text: true, DOMException: true, DOMRectReadOnly: false, MathMLElement: true, SVGAElement: true, SVGAnimateElement: true, SVGAnimateMotionElement: true, SVGAnimateTransformElement: true, SVGAnimationElement: true, SVGCircleElement: true, SVGClipPathElement: true, SVGDefsElement: true, SVGDescElement: true, SVGDiscardElement: true, SVGEllipseElement: true, SVGFEBlendElement: true, SVGFEColorMatrixElement: true, SVGFEComponentTransferElement: true, SVGFECompositeElement: true, SVGFEConvolveMatrixElement: true, SVGFEDiffuseLightingElement: true, SVGFEDisplacementMapElement: true, SVGFEDistantLightElement: true, SVGFEFloodElement: true, SVGFEFuncAElement: true, SVGFEFuncBElement: true, SVGFEFuncGElement: true, SVGFEFuncRElement: true, SVGFEGaussianBlurElement: true, SVGFEImageElement: true, SVGFEMergeElement: true, SVGFEMergeNodeElement: true, SVGFEMorphologyElement: true, SVGFEOffsetElement: true, SVGFEPointLightElement: true, SVGFESpecularLightingElement: true, SVGFESpotLightElement: true, SVGFETileElement: true, SVGFETurbulenceElement: true, SVGFilterElement: true, SVGForeignObjectElement: true, SVGGElement: true, SVGGeometryElement: true, SVGGraphicsElement: true, SVGImageElement: true, SVGLineElement: true, SVGLinearGradientElement: true, SVGMarkerElement: true, SVGMaskElement: true, SVGMetadataElement: true, SVGPathElement: true, SVGPatternElement: true, SVGPolygonElement: true, SVGPolylineElement: true, SVGRadialGradientElement: true, SVGRectElement: true, SVGScriptElement: true, SVGSetElement: true, SVGStopElement: true, SVGStyleElement: true, SVGElement: true, SVGSVGElement: true, SVGSwitchElement: true, SVGSymbolElement: true, SVGTSpanElement: true, SVGTextContentElement: true, SVGTextElement: true, SVGTextPathElement: true, SVGTextPositioningElement: true, SVGTitleElement: true, SVGUseElement: true, SVGViewElement: true, SVGGradientElement: true, SVGComponentTransferFunctionElement: true, SVGFEDropShadowElement: true, SVGMPathElement: true, Element: false, AbortPaymentEvent: true, AnimationEvent: true, AnimationPlaybackEvent: true, ApplicationCacheErrorEvent: true, BackgroundFetchClickEvent: true, BackgroundFetchEvent: true, BackgroundFetchFailEvent: true, BackgroundFetchedEvent: true, BeforeInstallPromptEvent: true, BeforeUnloadEvent: true, BlobEvent: true, CanMakePaymentEvent: true, ClipboardEvent: true, CloseEvent: true, CustomEvent: true, DeviceMotionEvent: true, DeviceOrientationEvent: true, ErrorEvent: true, ExtendableEvent: true, ExtendableMessageEvent: true, FetchEvent: true, FontFaceSetLoadEvent: true, ForeignFetchEvent: true, GamepadEvent: true, HashChangeEvent: true, InstallEvent: true, MediaEncryptedEvent: true, MediaKeyMessageEvent: true, MediaQueryListEvent: true, MediaStreamEvent: true, MediaStreamTrackEvent: true, MessageEvent: true, MIDIConnectionEvent: true, MIDIMessageEvent: true, MutationEvent: true, NotificationEvent: true, PageTransitionEvent: true, PaymentRequestEvent: true, PaymentRequestUpdateEvent: true, PopStateEvent: true, PresentationConnectionAvailableEvent: true, PresentationConnectionCloseEvent: true, ProgressEvent: true, PromiseRejectionEvent: true, PushEvent: true, RTCDataChannelEvent: true, RTCDTMFToneChangeEvent: true, RTCPeerConnectionIceEvent: true, RTCTrackEvent: true, SecurityPolicyViolationEvent: true, SensorErrorEvent: true, SpeechRecognitionError: true, SpeechRecognitionEvent: true, SpeechSynthesisEvent: true, StorageEvent: true, SyncEvent: true, TrackEvent: true, TransitionEvent: true, WebKitTransitionEvent: true, VRDeviceEvent: true, VRDisplayEvent: true, VRSessionEvent: true, MojoInterfaceRequestEvent: true, ResourceProgressEvent: true, USBConnectionEvent: true, IDBVersionChangeEvent: true, AudioProcessingEvent: true, OfflineAudioCompletionEvent: true, WebGLContextEvent: true, Event: false, InputEvent: false, SubmitEvent: false, EventTarget: false, HTMLFormElement: true, HTMLImageElement: true, MouseEvent: true, DragEvent: true, PointerEvent: true, WheelEvent: true, Document: true, DocumentFragment: true, HTMLDocument: true, ShadowRoot: true, XMLDocument: true, Attr: true, DocumentType: true, Node: false, HTMLSelectElement: true, CompositionEvent: true, FocusEvent: true, KeyboardEvent: true, TextEvent: true, TouchEvent: true, UIEvent: false, Window: true, DOMWindow: true, ClientRect: true, DOMRect: true});
   })();
   convertAllToFastObject(holders);
   convertToFastObject($);

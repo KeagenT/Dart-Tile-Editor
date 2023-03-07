@@ -6,6 +6,7 @@ import 'Models/grid.dart';
 import 'Models/tile.dart';
 import 'Types/position.dart';
 import 'Utilities/bitmask.dart';
+import 'Utilities/canvasUtilities.dart';
 
 const GRID_HEIGHT = 10;
 const GRID_WIDTH = 10;
@@ -27,14 +28,16 @@ void main() {
   canvas = querySelector('#canvas') as CanvasElement;
   ctx = canvas!.getContext('2d') as CanvasRenderingContext2D;
   tilemapImage.src = tilemapSrc;
-  new DrawCommand(tileGrid, GroundTile(), Position(0, 0)).execute();
-  new DrawCommand(tileGrid, GroundTile(), Position(0, 1)).execute();
-  new DrawCommand(tileGrid, GroundTile(), Position(1, 0)).execute();
-  new DrawCommand(tileGrid, GroundTile(), Position(1, 1)).execute();
-  new DrawCommand(tileGrid, GroundTile(), Position(2, 2)).execute();
-  new DrawCommand(tileGrid, GroundTile(), Position(3, 3)).execute();
-  new DrawCommand(tileGrid, GroundTile(), Position(4, 3)).execute();
   render();
+
+  canvas?.onMouseDown.listen((event) {
+    print(event);
+    print(event.offset);
+    Position clickedPosition = calculateEventPosition(
+        CANVAS_TILE_PIXEL_SIZE, event.offset.x as int, event.offset.y as int);
+    new DrawCommand(tileGrid, GroundTile(), clickedPosition).execute();
+    render();
+  });
 }
 
 void clear({color = 'black'}) {
@@ -47,7 +50,6 @@ void drawTile(int bitmask, Position coordinates, int sourceTileSize,
     int destinationTileSize) {
   Position tilemapPosition =
       convertBitmaskToFilePosition(bitmask, SOURCE_TILE_WIDTH);
-  print('$tilemapPosition for $bitmask');
   ctx!.drawImageScaledFromSource(
     tilemapImage,
     tilemapPosition.x * sourceTileSize,
