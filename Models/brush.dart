@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import '../Commands/command.dart';
 import '../Commands/draw.dart';
 import '../Types/position.dart';
@@ -39,7 +37,7 @@ class BrushDrawStateManager {
   final TileBrush brush;
   bool drawing = false;
   BrushDrawStateManager(this.brush);
-  void draw(Position position) {
+  void tryDraw(Position position) {
     if (drawing) {
       brush.draw(position);
     }

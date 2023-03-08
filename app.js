@@ -2790,6 +2790,9 @@
     UnimplementedError$(message) {
       return new A.UnimplementedError(message);
     },
+    StateError$(message) {
+      return new A.StateError(message);
+    },
     ConcurrentModificationError$(modifiedObject) {
       return new A.ConcurrentModificationError(modifiedObject);
     },
@@ -2830,6 +2833,9 @@
       this.message = t0;
     },
     UnimplementedError: function UnimplementedError(t0) {
+      this.message = t0;
+    },
+    StateError: function StateError(t0) {
       this.message = t0;
     },
     ConcurrentModificationError: function ConcurrentModificationError(t0) {
@@ -2992,6 +2998,10 @@
       this.grid = t1;
       this.drawCommands = t2;
     },
+    BrushDrawStateManager: function BrushDrawStateManager(t0) {
+      this.brush = t0;
+      this.drawing = false;
+    },
     Command: function Command() {
     },
     CommandManager: function CommandManager(t0) {
@@ -3043,6 +3053,12 @@
       t1 = $.canvas;
       if (t1 != null)
         A._EventStreamSubscription$(t1, "mousedown", t4._as(new A.main_closure1()), false, t3);
+      t1 = $.canvas;
+      if (t1 != null)
+        A._EventStreamSubscription$(t1, "mousemove", t4._as(new A.main_closure2()), false, t3);
+      t1 = $.canvas;
+      if (t1 != null)
+        A._EventStreamSubscription$(t1, "mouseup", t4._as(new A.main_closure3()), false, t3);
     },
     clear() {
       var t2, t3,
@@ -3079,6 +3095,10 @@
     main_closure0: function main_closure0() {
     },
     main_closure1: function main_closure1() {
+    },
+    main_closure2: function main_closure2() {
+    },
+    main_closure3: function main_closure3() {
     },
     Position: function Position(t0, t1) {
       this.x = t0;
@@ -3147,6 +3167,9 @@
         if (o === $._toStringVisiting[i])
           return true;
       return false;
+    },
+    calculateEventPosition(tileDimensions, x, y) {
+      return new A.Position(B.JSInt_methods.$tdiv(x, tileDimensions), B.JSInt_methods.$tdiv(y, tileDimensions));
     }
   },
   J = {
@@ -3260,6 +3283,13 @@
     get$length$asx(receiver) {
       return J.getInterceptor$asx(receiver).get$length(receiver);
     },
+    $eq$(receiver, a0) {
+      if (receiver == null)
+        return a0 == null;
+      if (typeof receiver != "object")
+        return a0 != null && receiver === a0;
+      return J.getInterceptor$(receiver).$eq(receiver, a0);
+    },
     _addEventListener$3$x(receiver, a0, a1, a2) {
       return J.getInterceptor$x(receiver)._addEventListener$3(receiver, a0, a1, a2);
     },
@@ -3321,6 +3351,9 @@
     $isbool: 1
   };
   J.JSNull.prototype = {
+    $eq(receiver, other) {
+      return null == other;
+    },
     toString$0(receiver) {
       return "null";
     }
@@ -3358,6 +3391,12 @@
         if (receiver.length !== end)
           throw A.wrapException(A.ConcurrentModificationError$(receiver));
       }
+    },
+    get$last(receiver) {
+      var t1 = receiver.length;
+      if (t1 > 0)
+        return receiver[t1 - 1];
+      throw A.wrapException(A.StateError$("No element"));
     },
     toString$0(receiver) {
       return A.IterableBase_iterableToFullString(receiver, "[", "]");
@@ -3446,8 +3485,11 @@
         return result;
       return result + other;
     },
-    _tdivFast$1(receiver, other) {
-      return (receiver | 0) === receiver ? receiver / other | 0 : this._tdivSlow$1(receiver, other);
+    $tdiv(receiver, other) {
+      if ((receiver | 0) === receiver)
+        if (other >= 1 || false)
+          return receiver / other | 0;
+      return this._tdivSlow$1(receiver, other);
     },
     _tdivSlow$1(receiver, other) {
       var quotient = receiver / other;
@@ -4139,6 +4181,11 @@
       return "UnimplementedError: " + this.message;
     }
   };
+  A.StateError.prototype = {
+    toString$0(_) {
+      return "Bad state: " + this.message;
+    }
+  };
   A.ConcurrentModificationError.prototype = {
     toString$0(_) {
       var t1 = this.modifiedObject;
@@ -4430,10 +4477,54 @@
     $signature: 4
   };
   A.Brush.prototype = {};
-  A.TileBrush.prototype = {};
+  A.TileBrush.prototype = {
+    draw$1(position) {
+      var t4,
+        t1 = this.grid,
+        t2 = this.currentTile.clone$0(0),
+        drawCommand = new A.DrawCommand(t1, t2, position),
+        t3 = this.drawCommands;
+      if (!J.$eq$(t3.peek$0(), drawCommand)) {
+        B.JSArray_methods.add$1(t3.commands, drawCommand);
+        drawCommand.__DrawCommand_setTileCommand_A = new A.SetTileCommand(t1, t2, position);
+        t3 = t1.__Grid__grid_A;
+        t3 === $ && A.throwLateFieldNI("_grid");
+        t4 = position.y;
+        if (!(t4 >= 0 && t4 < t3.length))
+          return A.ioore(t3, t4);
+        t4 = t3[t4];
+        t3 = position.x;
+        if (!(t3 >= 0 && t3 < t4.length))
+          return A.ioore(t4, t3);
+        t3 = t4[t3];
+        t3.toString;
+        type$.Tile._as(t3);
+        t1.$set$2(position, t2);
+        t1 = new A.UpdateTileBitmasksCommand(t1, position, A._setArrayType([], type$.JSArray_UpdateTileBitmaskCommand));
+        drawCommand.__DrawCommand_updateTileBitmasksCommand_A = t1;
+        t1.execute$0();
+      }
+    }
+  };
+  A.BrushDrawStateManager.prototype = {};
   A.Command.prototype = {};
-  A.CommandManager.prototype = {};
-  A.DrawCommand.prototype = {};
+  A.CommandManager.prototype = {
+    peek$0() {
+      var t1 = this.commands;
+      if (t1.length !== 0)
+        return B.JSArray_methods.get$last(t1);
+      return null;
+    }
+  };
+  A.DrawCommand.prototype = {
+    $eq(_, other) {
+      if (other == null)
+        return false;
+      if (!(other instanceof A.DrawCommand))
+        return false;
+      return this.tile.$eq(0, other.tile) && this.coordinates.$eq(0, other.coordinates);
+    }
+  };
   A.Grid.prototype = {
     Grid$3$fillValue(height, width, fillValue, $T) {
       var t1, _length0, t2, i, _list0, i0, _this = this,
@@ -4491,51 +4582,56 @@
   };
   A.main_closure.prototype = {
     call$1($event) {
+      var t1, t2;
       type$.MouseEvent._as($event);
-      $.$get$brush().currentTile = A.GroundTile$(0, false);
+      t1 = $.$get$brushDrawStateManager();
+      t2 = A.GroundTile$(0, false);
+      t1.brush.currentTile = t2;
     },
     $signature: 1
   };
   A.main_closure0.prototype = {
     call$1($event) {
+      var t1, t2;
       type$.MouseEvent._as($event);
-      $.$get$brush().currentTile = A.HoleTile$(16, true);
+      t1 = $.$get$brushDrawStateManager();
+      t2 = A.HoleTile$(16, true);
+      t1.brush.currentTile = t2;
     },
     $signature: 1
   };
   A.main_closure1.prototype = {
     call$1($event) {
-      var t1, t2, xPosition, yPosition, clickedPosition, t3, t4;
+      var t1, clickedPosition;
       type$.MouseEvent._as($event);
       t1 = J.getInterceptor$x($event);
-      t2 = A._asInt(t1.get$offset($event).x);
-      t1 = A._asInt(t1.get$offset($event).y);
-      xPosition = B.JSInt_methods._tdivFast$1(t2, 16);
-      yPosition = B.JSInt_methods._tdivFast$1(t1, 16);
-      clickedPosition = new A.Position(xPosition, yPosition);
-      t1 = $.$get$brush();
-      t2 = t1.drawCommands;
-      t3 = t1.grid;
-      t1 = t1.currentTile.clone$0(0);
-      t4 = new A.DrawCommand(t3, t1, clickedPosition);
-      B.JSArray_methods.add$1(t2.commands, t4);
-      t4.__DrawCommand_setTileCommand_A = new A.SetTileCommand(t3, t1, clickedPosition);
-      t2 = t3.__Grid__grid_A;
-      t2 === $ && A.throwLateFieldNI("_grid");
-      if (!(yPosition >= 0 && yPosition < t2.length))
-        return A.ioore(t2, yPosition);
-      t2 = t2[yPosition];
-      if (!(xPosition >= 0 && xPosition < t2.length))
-        return A.ioore(t2, xPosition);
-      t2 = t2[xPosition];
-      t2.toString;
-      type$.Tile._as(t2);
-      t3.$set$2(clickedPosition, t1);
-      t3 = new A.UpdateTileBitmasksCommand(t3, clickedPosition, A._setArrayType([], type$.JSArray_UpdateTileBitmaskCommand));
-      t4.__DrawCommand_updateTileBitmasksCommand_A = t3;
-      t3.execute$0();
+      clickedPosition = A.calculateEventPosition(16, A._asInt(t1.get$offset($event).x), A._asInt(t1.get$offset($event).y));
+      t1 = $.$get$brushDrawStateManager();
+      t1.drawing = true;
+      t1.brush.draw$1(clickedPosition);
       A.clear();
       A.drawGrid();
+    },
+    $signature: 1
+  };
+  A.main_closure2.prototype = {
+    call$1($event) {
+      var t1, draggedPosition;
+      type$.MouseEvent._as($event);
+      t1 = J.getInterceptor$x($event);
+      draggedPosition = A.calculateEventPosition(16, A._asInt(t1.get$offset($event).x), A._asInt(t1.get$offset($event).y));
+      t1 = $.$get$brushDrawStateManager();
+      if (t1.drawing)
+        t1.brush.draw$1(draggedPosition);
+      A.clear();
+      A.drawGrid();
+    },
+    $signature: 1
+  };
+  A.main_closure3.prototype = {
+    call$1($event) {
+      type$.MouseEvent._as($event);
+      $.$get$brushDrawStateManager().drawing = false;
     },
     $signature: 1
   };
@@ -4552,12 +4648,26 @@
     },
     toString$0(_) {
       return "Position(" + this.x + ", " + this.y + ")";
+    },
+    $eq(_, other) {
+      if (other == null)
+        return false;
+      if (!(other instanceof A.Position))
+        return false;
+      return this.x === other.x && this.y === other.y;
     }
   };
   A.SetTileCommand.prototype = {};
   A.Tile.prototype = {
     toString$0(_) {
       return "(" + this.get$tileType() + ": " + B.JSString_methods.padLeft$2(B.JSInt_methods.toRadixString$1(this.bitmask, 2), 4, "0") + ")";
+    },
+    $eq(_, other) {
+      if (other == null)
+        return false;
+      if (!(other instanceof A.Tile))
+        return false;
+      return this.collision === other.collision && this.bitmask === other.bitmask;
     },
     get$tileType() {
       return this.tileType;
@@ -4599,15 +4709,15 @@
     var _inherit = hunkHelpers.inherit,
       _inheritMany = hunkHelpers.inheritMany;
     _inherit(A.Object, null);
-    _inheritMany(A.Object, [A.JS_CONST, J.Interceptor, J.ArrayIterator, A.Error, A.TypeErrorDecoder, A.NullThrownFromJavaScriptException, A._StackTrace, A.Closure, A.Rti, A._FunctionParameters, A._TimerImpl, A.AsyncError, A._FutureListener, A._Future, A._AsyncCallbackEntry, A.Stream, A.StreamSubscription, A._Zone, A.OutOfMemoryError, A.StackOverflowError, A._Exception, A.Null, A._StringStackTrace, A.StringBuffer, A.EventStreamProvider, A._DOMWindowCrossFrame, A.Point, A.Command, A.Brush, A.CommandManager, A.Grid, A.Position, A.Tile]);
+    _inheritMany(A.Object, [A.JS_CONST, J.Interceptor, J.ArrayIterator, A.Error, A.TypeErrorDecoder, A.NullThrownFromJavaScriptException, A._StackTrace, A.Closure, A.Rti, A._FunctionParameters, A._TimerImpl, A.AsyncError, A._FutureListener, A._Future, A._AsyncCallbackEntry, A.Stream, A.StreamSubscription, A._Zone, A.OutOfMemoryError, A.StackOverflowError, A._Exception, A.Null, A._StringStackTrace, A.StringBuffer, A.EventStreamProvider, A._DOMWindowCrossFrame, A.Point, A.Command, A.Brush, A.BrushDrawStateManager, A.CommandManager, A.Grid, A.Position, A.Tile]);
     _inheritMany(J.Interceptor, [J.JSBool, J.JSNull, J.JavaScriptObject, J.JSArray, J.JSNumber, J.JSString]);
     _inheritMany(J.JavaScriptObject, [J.LegacyJavaScriptObject, A.EventTarget, A.CanvasRenderingContext2D, A.DomException, A.DomRectReadOnly, A.Event]);
     _inheritMany(J.LegacyJavaScriptObject, [J.PlainJavaScriptObject, J.UnknownJavaScriptObject, J.JavaScriptFunction]);
     _inherit(J.JSUnmodifiableArray, J.JSArray);
     _inheritMany(J.JSNumber, [J.JSInt, J.JSNumNotInt]);
-    _inheritMany(A.Error, [A.LateError, A.TypeError, A.JsNoSuchMethodError, A.UnknownJsTypeError, A.RuntimeError, A._Error, A.AssertionError, A.NullThrownError, A.ArgumentError, A.UnsupportedError, A.UnimplementedError, A.ConcurrentModificationError, A.CyclicInitializationError]);
+    _inheritMany(A.Error, [A.LateError, A.TypeError, A.JsNoSuchMethodError, A.UnknownJsTypeError, A.RuntimeError, A._Error, A.AssertionError, A.NullThrownError, A.ArgumentError, A.UnsupportedError, A.UnimplementedError, A.StateError, A.ConcurrentModificationError, A.CyclicInitializationError]);
     _inherit(A.NullError, A.TypeError);
-    _inheritMany(A.Closure, [A.Closure0Args, A.Closure2Args, A.TearOffClosure, A.initHooks_closure, A.initHooks_closure1, A._AsyncRun__initializeScheduleImmediate_internalCallback, A._AsyncRun__initializeScheduleImmediate_closure, A._Future__propagateToListeners_handleWhenCompleteCallback_closure, A.Stream_length_closure, A._RootZone_bindUnaryCallbackGuarded_closure, A._EventStreamSubscription_closure, A.UpdateTileBitmasksCommand_execute_closure, A.UpdateTileBitmasksCommand_execute_closure0, A.calcGroundBitmask_closure, A.main_closure, A.main_closure0, A.main_closure1]);
+    _inheritMany(A.Closure, [A.Closure0Args, A.Closure2Args, A.TearOffClosure, A.initHooks_closure, A.initHooks_closure1, A._AsyncRun__initializeScheduleImmediate_internalCallback, A._AsyncRun__initializeScheduleImmediate_closure, A._Future__propagateToListeners_handleWhenCompleteCallback_closure, A.Stream_length_closure, A._RootZone_bindUnaryCallbackGuarded_closure, A._EventStreamSubscription_closure, A.UpdateTileBitmasksCommand_execute_closure, A.UpdateTileBitmasksCommand_execute_closure0, A.calcGroundBitmask_closure, A.main_closure, A.main_closure0, A.main_closure1, A.main_closure2, A.main_closure3]);
     _inheritMany(A.TearOffClosure, [A.StaticClosure, A.BoundClosure]);
     _inherit(A.initHooks_closure0, A.Closure2Args);
     _inherit(A._TypeError, A._Error);
@@ -4638,7 +4748,7 @@
     leafTags: null,
     arrayRti: Symbol("$ti")
   };
-  A._Universe_addRules(init.typeUniverse, JSON.parse('{"PlainJavaScriptObject":"LegacyJavaScriptObject","UnknownJavaScriptObject":"LegacyJavaScriptObject","JavaScriptFunction":"LegacyJavaScriptObject","AbortPaymentEvent":"Event","ExtendableEvent":"Event","MathMLElement":"Element","AudioElement":"HtmlElement","MediaElement":"HtmlElement","HtmlDocument":"Node","Document":"Node","PointerEvent":"MouseEvent","CompositionEvent":"UIEvent","CDataSection":"CharacterData","Text":"CharacterData","JSBool":{"bool":[]},"JSArray":{"List":["1"],"Iterable":["1"]},"JSUnmodifiableArray":{"JSArray":["1"],"List":["1"],"Iterable":["1"]},"JSNumber":{"num":[]},"JSInt":{"int":[],"num":[]},"JSNumNotInt":{"num":[]},"JSString":{"String":[]},"LateError":{"Error":[]},"NullError":{"TypeError":[],"Error":[]},"JsNoSuchMethodError":{"Error":[]},"UnknownJsTypeError":{"Error":[]},"_StackTrace":{"StackTrace":[]},"Closure":{"Function":[]},"Closure0Args":{"Function":[]},"Closure2Args":{"Function":[]},"TearOffClosure":{"Function":[]},"StaticClosure":{"Function":[]},"BoundClosure":{"Function":[]},"RuntimeError":{"Error":[]},"_Error":{"Error":[]},"_TypeError":{"TypeError":[],"Error":[]},"_Future":{"Future":["1"]},"AsyncError":{"Error":[]},"_Zone":{"Zone":[]},"_RootZone":{"_Zone":[],"Zone":[]},"int":{"num":[]},"List":{"Iterable":["1"]},"AssertionError":{"Error":[]},"TypeError":{"Error":[]},"NullThrownError":{"Error":[]},"ArgumentError":{"Error":[]},"RangeError":{"Error":[]},"IndexError":{"Error":[]},"UnsupportedError":{"Error":[]},"UnimplementedError":{"Error":[]},"ConcurrentModificationError":{"Error":[]},"OutOfMemoryError":{"Error":[]},"StackOverflowError":{"Error":[]},"CyclicInitializationError":{"Error":[]},"_StringStackTrace":{"StackTrace":[]},"MouseEvent":{"Event":[]},"HtmlElement":{"Element":[],"EventTarget":[]},"AnchorElement":{"Element":[],"EventTarget":[]},"AreaElement":{"Element":[],"EventTarget":[]},"ButtonElement":{"Element":[],"EventTarget":[]},"CanvasElement":{"Element":[],"EventTarget":[]},"CharacterData":{"EventTarget":[]},"Element":{"EventTarget":[]},"FormElement":{"Element":[],"EventTarget":[]},"ImageElement":{"Element":[],"EventTarget":[]},"Node":{"EventTarget":[]},"SelectElement":{"Element":[],"EventTarget":[]},"UIEvent":{"Event":[]},"Window":{"WindowBase":[],"EventTarget":[]},"_EventStream":{"Stream":["1"]},"_ElementEventStreamImpl":{"_EventStream":["1"],"Stream":["1"]},"_DOMWindowCrossFrame":{"WindowBase":[],"EventTarget":[]},"UpdateTileBitmaskCommand":{"Command":[]},"UpdateTileBitmasksCommand":{"Command":[]},"TileBrush":{"Brush":["Tile"]},"DrawCommand":{"Command":[]},"TileGrid":{"Grid":["Tile"],"Grid.T":"Tile"},"SetTileCommand":{"Command":[]},"HoleTile":{"Tile":[]},"GroundTile":{"Tile":[]}}'));
+  A._Universe_addRules(init.typeUniverse, JSON.parse('{"PlainJavaScriptObject":"LegacyJavaScriptObject","UnknownJavaScriptObject":"LegacyJavaScriptObject","JavaScriptFunction":"LegacyJavaScriptObject","AbortPaymentEvent":"Event","ExtendableEvent":"Event","MathMLElement":"Element","AudioElement":"HtmlElement","MediaElement":"HtmlElement","HtmlDocument":"Node","Document":"Node","PointerEvent":"MouseEvent","CompositionEvent":"UIEvent","CDataSection":"CharacterData","Text":"CharacterData","JSBool":{"bool":[]},"JSArray":{"List":["1"],"Iterable":["1"]},"JSUnmodifiableArray":{"JSArray":["1"],"List":["1"],"Iterable":["1"]},"JSNumber":{"num":[]},"JSInt":{"int":[],"num":[]},"JSNumNotInt":{"num":[]},"JSString":{"String":[]},"LateError":{"Error":[]},"NullError":{"TypeError":[],"Error":[]},"JsNoSuchMethodError":{"Error":[]},"UnknownJsTypeError":{"Error":[]},"_StackTrace":{"StackTrace":[]},"Closure":{"Function":[]},"Closure0Args":{"Function":[]},"Closure2Args":{"Function":[]},"TearOffClosure":{"Function":[]},"StaticClosure":{"Function":[]},"BoundClosure":{"Function":[]},"RuntimeError":{"Error":[]},"_Error":{"Error":[]},"_TypeError":{"TypeError":[],"Error":[]},"_Future":{"Future":["1"]},"AsyncError":{"Error":[]},"_Zone":{"Zone":[]},"_RootZone":{"_Zone":[],"Zone":[]},"int":{"num":[]},"List":{"Iterable":["1"]},"AssertionError":{"Error":[]},"TypeError":{"Error":[]},"NullThrownError":{"Error":[]},"ArgumentError":{"Error":[]},"RangeError":{"Error":[]},"IndexError":{"Error":[]},"UnsupportedError":{"Error":[]},"UnimplementedError":{"Error":[]},"StateError":{"Error":[]},"ConcurrentModificationError":{"Error":[]},"OutOfMemoryError":{"Error":[]},"StackOverflowError":{"Error":[]},"CyclicInitializationError":{"Error":[]},"_StringStackTrace":{"StackTrace":[]},"MouseEvent":{"Event":[]},"HtmlElement":{"Element":[],"EventTarget":[]},"AnchorElement":{"Element":[],"EventTarget":[]},"AreaElement":{"Element":[],"EventTarget":[]},"ButtonElement":{"Element":[],"EventTarget":[]},"CanvasElement":{"Element":[],"EventTarget":[]},"CharacterData":{"EventTarget":[]},"Element":{"EventTarget":[]},"FormElement":{"Element":[],"EventTarget":[]},"ImageElement":{"Element":[],"EventTarget":[]},"Node":{"EventTarget":[]},"SelectElement":{"Element":[],"EventTarget":[]},"UIEvent":{"Event":[]},"Window":{"WindowBase":[],"EventTarget":[]},"_EventStream":{"Stream":["1"]},"_ElementEventStreamImpl":{"_EventStream":["1"],"Stream":["1"]},"_DOMWindowCrossFrame":{"WindowBase":[],"EventTarget":[]},"UpdateTileBitmaskCommand":{"Command":[]},"UpdateTileBitmasksCommand":{"Command":[]},"TileBrush":{"Brush":["Tile"]},"DrawCommand":{"Command":[]},"TileGrid":{"Grid":["Tile"],"Grid.T":"Tile"},"SetTileCommand":{"Command":[]},"HoleTile":{"Tile":[]},"GroundTile":{"Tile":[]}}'));
   A._Universe_addErasedTypes(init.typeUniverse, JSON.parse('{"StreamSubscription":1}'));
   var string$ = {
     Error_: "Error handler must accept one Object or one Object and a StackTrace as arguments, and return a value of the returned future's type"
@@ -4913,6 +5023,7 @@
       var t1 = $.$get$tileGrid();
       return new A.TileBrush(A.GroundTile$(0, false), t1, new A.CommandManager(A._setArrayType([], A.findType("JSArray<Command>"))));
     });
+    _lazy($, "brushDrawStateManager", "$get$brushDrawStateManager", () => new A.BrushDrawStateManager($.$get$brush()));
   })();
   (function nativeSupport() {
     !function() {

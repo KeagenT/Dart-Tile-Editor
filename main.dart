@@ -27,6 +27,7 @@ ButtonElement groundButton = ButtonElement();
 ButtonElement holeButton = ButtonElement();
 TileGrid tileGrid = TileGrid(GRID_HEIGHT, GRID_WIDTH, fillValue: HoleTile());
 TileBrush brush = TileBrush(tileGrid, GroundTile());
+BrushDrawStateManager brushDrawStateManager = BrushDrawStateManager(brush);
 
 void main() {
   groundButton = querySelector('#GroundTile') as ButtonElement;
@@ -37,16 +38,26 @@ void main() {
   render();
 
   groundButton.onClick.listen((event) {
-    brush.updateCurrentPaint(GroundTile());
+    brushDrawStateManager.updateCurrentPaint(GroundTile());
   });
   holeButton.onClick.listen((event) {
-    brush.updateCurrentPaint(HoleTile());
+    brushDrawStateManager.updateCurrentPaint(HoleTile());
   });
   canvas?.onMouseDown.listen((event) {
     Position clickedPosition = calculateEventPosition(
         CANVAS_TILE_PIXEL_SIZE, event.offset.x as int, event.offset.y as int);
-    brush.draw(clickedPosition);
+    brushDrawStateManager.startDrawing();
+    brushDrawStateManager.tryDraw(clickedPosition);
     render();
+  });
+  canvas?.onMouseMove.listen((event) {
+    Position draggedPosition = calculateEventPosition(
+        CANVAS_TILE_PIXEL_SIZE, event.offset.x as int, event.offset.y as int);
+    brushDrawStateManager.tryDraw(draggedPosition);
+    render();
+  });
+  canvas?.onMouseUp.listen((event) {
+    brushDrawStateManager.stopDrawing();
   });
 }
 
