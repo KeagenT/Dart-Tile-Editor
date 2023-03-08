@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import '../Commands/command.dart';
 import '../Commands/draw.dart';
 import '../Types/position.dart';
@@ -30,5 +32,32 @@ class TileBrush extends Brush<Tile> {
 
   void updateCurrentPaint(Tile tile) {
     this.currentTile = tile;
+  }
+}
+
+class BrushDrawStateManager {
+  final TileBrush brush;
+  bool drawing = false;
+  BrushDrawStateManager(this.brush);
+  void draw(Position position) {
+    if (drawing) {
+      brush.draw(position);
+    }
+  }
+
+  void startDrawing() {
+    drawing = true;
+  }
+
+  void stopDrawing() {
+    drawing = false;
+  }
+
+  void undo() {
+    brush.undo();
+  }
+
+  void updateCurrentPaint(Tile tile) {
+    brush.updateCurrentPaint(tile);
   }
 }
