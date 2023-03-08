@@ -21,4 +21,11 @@ class CommandManager {
       toUndo.undo();
     }
   }
+
+  Command? peek() {
+    if (commands.isNotEmpty) {
+      return commands.last;
+    }
+    return null;
+  }
 }
