@@ -30,4 +30,11 @@ class DrawCommand extends Command {
     this.updateTileBitmasksCommand.undo();
     this.setTileCommand.undo();
   }
+
+  bool operator ==(Object other) {
+    if (other is! DrawCommand) {
+      return false;
+    }
+    return this.tile == other.tile && this.coordinates == other.coordinates;
+  }
 }

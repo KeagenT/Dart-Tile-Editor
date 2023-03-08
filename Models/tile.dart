@@ -23,6 +23,13 @@ class Tile {
   String toString() {
     return '($tileType: ${bitmask.toRadixString(2).padLeft(4, '0')})';
   }
+
+  bool operator ==(Object other) {
+    if (other is! Tile) {
+      return false;
+    }
+    return this.collision == other.collision && this.bitmask == other.bitmask;
+  }
 }
 
 class GroundTile extends Tile {

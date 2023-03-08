@@ -36,4 +36,12 @@ class Position {
   String toString() {
     return 'Position(${this.x}, ${this.y})';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! Position) {
+      return false;
+    }
+    return this.x == other.x && this.y == other.y;
+  }
 }
