@@ -38,6 +38,9 @@ class BrushDrawStateManager {
   bool drawing = false;
   BrushDrawStateManager(this.brush);
   void tryDraw(Position position) {
+    if (!brush.grid.contains(position)) {
+      this.stopDrawing();
+    }
     if (drawing) {
       brush.draw(position);
     }

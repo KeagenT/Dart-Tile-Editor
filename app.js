@@ -2796,6 +2796,9 @@
     ConcurrentModificationError$(modifiedObject) {
       return new A.ConcurrentModificationError(modifiedObject);
     },
+    print(object) {
+      A.printString(A.S(object));
+    },
     Error: function Error() {
     },
     AssertionError: function AssertionError(t0) {
@@ -3136,6 +3139,23 @@
       _.collision = false;
       _.bitmask = 0;
       _.tileType = t1;
+    },
+    printString(string) {
+      if (typeof dartPrint == "function") {
+        dartPrint(string);
+        return;
+      }
+      if (typeof console == "object" && typeof console.log != "undefined") {
+        console.log(string);
+        return;
+      }
+      if (typeof window == "object")
+        return;
+      if (typeof print == "function") {
+        print(string);
+        return;
+      }
+      throw "Unable to print message: " + String(string);
     },
     throwLateFieldNI(fieldName) {
       return A.throwExpression(A.LateError$fieldNI(fieldName));
@@ -4477,36 +4497,44 @@
     $signature: 4
   };
   A.Brush.prototype = {};
-  A.TileBrush.prototype = {
-    draw$1(position) {
-      var t4,
-        t1 = this.grid,
-        t2 = this.currentTile.clone$0(0),
-        drawCommand = new A.DrawCommand(t1, t2, position),
-        t3 = this.drawCommands;
-      if (!J.$eq$(t3.peek$0(), drawCommand)) {
-        B.JSArray_methods.add$1(t3.commands, drawCommand);
-        drawCommand.__DrawCommand_setTileCommand_A = new A.SetTileCommand(t1, t2, position);
-        t3 = t1.__Grid__grid_A;
-        t3 === $ && A.throwLateFieldNI("_grid");
-        t4 = position.y;
-        if (!(t4 >= 0 && t4 < t3.length))
-          return A.ioore(t3, t4);
-        t4 = t3[t4];
-        t3 = position.x;
-        if (!(t3 >= 0 && t3 < t4.length))
-          return A.ioore(t4, t3);
-        t3 = t4[t3];
-        t3.toString;
-        type$.Tile._as(t3);
-        t1.$set$2(position, t2);
-        t1 = new A.UpdateTileBitmasksCommand(t1, position, A._setArrayType([], type$.JSArray_UpdateTileBitmaskCommand));
-        drawCommand.__DrawCommand_updateTileBitmasksCommand_A = t1;
-        t1.execute$0();
+  A.TileBrush.prototype = {};
+  A.BrushDrawStateManager.prototype = {
+    tryDraw$1(position) {
+      var t1, t2, t3, drawCommand, t4;
+      A.print(position);
+      t1 = this.brush;
+      t2 = t1.grid;
+      if (!t2.contains$1(0, position)) {
+        A.print(position.toString$0(0) + " is outside grid");
+        this.drawing = false;
+      }
+      if (this.drawing) {
+        t3 = t1.currentTile.clone$0(0);
+        drawCommand = new A.DrawCommand(t2, t3, position);
+        t1 = t1.drawCommands;
+        if (!J.$eq$(t1.peek$0(), drawCommand)) {
+          B.JSArray_methods.add$1(t1.commands, drawCommand);
+          drawCommand.__DrawCommand_setTileCommand_A = new A.SetTileCommand(t2, t3, position);
+          t1 = t2.__Grid__grid_A;
+          t1 === $ && A.throwLateFieldNI("_grid");
+          t4 = position.y;
+          if (!(t4 >= 0 && t4 < t1.length))
+            return A.ioore(t1, t4);
+          t4 = t1[t4];
+          t1 = position.x;
+          if (!(t1 >= 0 && t1 < t4.length))
+            return A.ioore(t4, t1);
+          t1 = t4[t1];
+          t1.toString;
+          type$.Tile._as(t1);
+          t2.$set$2(position, t3);
+          t2 = new A.UpdateTileBitmasksCommand(t2, position, A._setArrayType([], type$.JSArray_UpdateTileBitmaskCommand));
+          drawCommand.__DrawCommand_updateTileBitmasksCommand_A = t2;
+          t2.execute$0();
+        }
       }
     }
   };
-  A.BrushDrawStateManager.prototype = {};
   A.Command.prototype = {};
   A.CommandManager.prototype = {
     peek$0() {
@@ -4608,7 +4636,7 @@
       clickedPosition = A.calculateEventPosition(16, A._asInt(t1.get$offset($event).x), A._asInt(t1.get$offset($event).y));
       t1 = $.$get$brushDrawStateManager();
       t1.drawing = true;
-      t1.brush.draw$1(clickedPosition);
+      t1.tryDraw$1(clickedPosition);
       A.clear();
       A.drawGrid();
     },
@@ -4620,9 +4648,7 @@
       type$.MouseEvent._as($event);
       t1 = J.getInterceptor$x($event);
       draggedPosition = A.calculateEventPosition(16, A._asInt(t1.get$offset($event).x), A._asInt(t1.get$offset($event).y));
-      t1 = $.$get$brushDrawStateManager();
-      if (t1.drawing)
-        t1.brush.draw$1(draggedPosition);
+      $.$get$brushDrawStateManager().tryDraw$1(draggedPosition);
       A.clear();
       A.drawGrid();
     },
