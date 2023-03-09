@@ -2796,9 +2796,6 @@
     ConcurrentModificationError$(modifiedObject) {
       return new A.ConcurrentModificationError(modifiedObject);
     },
-    print(object) {
-      A.printString(A.S(object));
-    },
     Error: function Error() {
     },
     AssertionError: function AssertionError(t0) {
@@ -3062,6 +3059,9 @@
       t1 = $.canvas;
       if (t1 != null)
         A._EventStreamSubscription$(t1, "mouseup", t4._as(new A.main_closure3()), false, t3);
+      t1 = $.canvas;
+      if (t1 != null)
+        A._EventStreamSubscription$(t1, "mouseout", t4._as(new A.main_closure4()), false, t3);
     },
     clear() {
       var t2, t3,
@@ -3103,6 +3103,8 @@
     },
     main_closure3: function main_closure3() {
     },
+    main_closure4: function main_closure4() {
+    },
     Position: function Position(t0, t1) {
       this.x = t0;
       this.y = t1;
@@ -3139,23 +3141,6 @@
       _.collision = false;
       _.bitmask = 0;
       _.tileType = t1;
-    },
-    printString(string) {
-      if (typeof dartPrint == "function") {
-        dartPrint(string);
-        return;
-      }
-      if (typeof console == "object" && typeof console.log != "undefined") {
-        console.log(string);
-        return;
-      }
-      if (typeof window == "object")
-        return;
-      if (typeof print == "function") {
-        print(string);
-        return;
-      }
-      throw "Unable to print message: " + String(string);
     },
     throwLateFieldNI(fieldName) {
       return A.throwExpression(A.LateError$fieldNI(fieldName));
@@ -4500,14 +4485,11 @@
   A.TileBrush.prototype = {};
   A.BrushDrawStateManager.prototype = {
     tryDraw$1(position) {
-      var t1, t2, t3, drawCommand, t4;
-      A.print(position);
-      t1 = this.brush;
-      t2 = t1.grid;
-      if (!t2.contains$1(0, position)) {
-        A.print(position.toString$0(0) + " is outside grid");
+      var t3, drawCommand, t4,
+        t1 = this.brush,
+        t2 = t1.grid;
+      if (!t2.contains$1(0, position))
         this.drawing = false;
-      }
       if (this.drawing) {
         t3 = t1.currentTile.clone$0(0);
         drawCommand = new A.DrawCommand(t2, t3, position);
@@ -4661,6 +4643,13 @@
     },
     $signature: 1
   };
+  A.main_closure4.prototype = {
+    call$1($event) {
+      type$.MouseEvent._as($event);
+      $.$get$brushDrawStateManager().drawing = false;
+    },
+    $signature: 1
+  };
   A.Position.prototype = {
     $add(_, other) {
       return new A.Position(this.x + other.x, this.y + other.y);
@@ -4743,7 +4732,7 @@
     _inheritMany(J.JSNumber, [J.JSInt, J.JSNumNotInt]);
     _inheritMany(A.Error, [A.LateError, A.TypeError, A.JsNoSuchMethodError, A.UnknownJsTypeError, A.RuntimeError, A._Error, A.AssertionError, A.NullThrownError, A.ArgumentError, A.UnsupportedError, A.UnimplementedError, A.StateError, A.ConcurrentModificationError, A.CyclicInitializationError]);
     _inherit(A.NullError, A.TypeError);
-    _inheritMany(A.Closure, [A.Closure0Args, A.Closure2Args, A.TearOffClosure, A.initHooks_closure, A.initHooks_closure1, A._AsyncRun__initializeScheduleImmediate_internalCallback, A._AsyncRun__initializeScheduleImmediate_closure, A._Future__propagateToListeners_handleWhenCompleteCallback_closure, A.Stream_length_closure, A._RootZone_bindUnaryCallbackGuarded_closure, A._EventStreamSubscription_closure, A.UpdateTileBitmasksCommand_execute_closure, A.UpdateTileBitmasksCommand_execute_closure0, A.calcGroundBitmask_closure, A.main_closure, A.main_closure0, A.main_closure1, A.main_closure2, A.main_closure3]);
+    _inheritMany(A.Closure, [A.Closure0Args, A.Closure2Args, A.TearOffClosure, A.initHooks_closure, A.initHooks_closure1, A._AsyncRun__initializeScheduleImmediate_internalCallback, A._AsyncRun__initializeScheduleImmediate_closure, A._Future__propagateToListeners_handleWhenCompleteCallback_closure, A.Stream_length_closure, A._RootZone_bindUnaryCallbackGuarded_closure, A._EventStreamSubscription_closure, A.UpdateTileBitmasksCommand_execute_closure, A.UpdateTileBitmasksCommand_execute_closure0, A.calcGroundBitmask_closure, A.main_closure, A.main_closure0, A.main_closure1, A.main_closure2, A.main_closure3, A.main_closure4]);
     _inheritMany(A.TearOffClosure, [A.StaticClosure, A.BoundClosure]);
     _inherit(A.initHooks_closure0, A.Closure2Args);
     _inherit(A._TypeError, A._Error);

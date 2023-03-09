@@ -59,6 +59,9 @@ void main() {
   canvas?.onMouseUp.listen((event) {
     brushDrawStateManager.stopDrawing();
   });
+  canvas?.onMouseOut.listen((event) {
+    brushDrawStateManager.stopDrawing();
+  });
 }
 
 void clear({color = 'black'}) {
